@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 
 # Detect Nodejs Version
-NODE_VERSION="$1"
+NODE_VERSION="$NODE_VERSION"
 
 # Find .nvmrc
 if [ "$NODE_VERSION" = "" ]; then 
@@ -35,7 +35,7 @@ if [ "$NODE_VERSION" = "" ]; then
   exit 1
 fi
 
-OUT_DIR="$2"
+OUT_DIR="$OUT_DIR"
 if [ "$OUT_DIR" = "" ]; then
   OUT_DIR="$HOME/.local/nodejs"
 fi
@@ -44,14 +44,13 @@ fi
 >&2 echo OUT_DIR: $OUT_DIR
 
 ARCH=""
-OS=""
-
 case "$(uname -m)" in
   x86_64 | x86-64 | x64 | amd64) ARCH="amd64";;
   aarch64 | arm64) ARCH="arm64";;
   *) ARCH="";;
 esac
 
+OS=""
 case "$(uname -s)" in
   Darwin) OS="macos";;
   Linux) OS="linux";;
@@ -63,7 +62,6 @@ esac
 >&2 echo OS: $OS
 
 URL=""
-
 case "$OS-$ARCH" in
   linux-amd64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz";;
   linux-arm64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.gz";;
@@ -100,7 +98,7 @@ if ! [ "$GITHUB_PATH" = "" ]; then
   echo $PATH_PREFIX_BIN >> $GITHUB_PATH
 fi
 
-if ! [ "$GITHUB_PATH" = "" ]; then
+if ! [ "$GITHUB_ENV" = "" ]; then
   echo "NPM_CONFIG_PREFIX=${PATH_PREFIX}" >> $GITHUB_ENV
 fi
 
