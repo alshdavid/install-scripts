@@ -30,9 +30,9 @@ fi
 
 >&2 echo OUT_DIR: $OUT_DIR
 
-RUSTUP_HOME="${OUT_DIR}/rustup"
-CARGO_HOME="${OUT_DIR}/rust/cargo"
-RUST_BIN="${CARGO_HOME}/bin"
+export RUSTUP_HOME="${OUT_DIR}/rustup"
+export CARGO_HOME="${OUT_DIR}/rust/cargo"
+export RUST_BIN="${CARGO_HOME}/bin"
 
 >&2 echo RUSTUP_HOME: $RUSTUP_HOME
 >&2 echo CARGO_HOME: $CARGO_HOME
