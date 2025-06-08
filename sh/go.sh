@@ -51,7 +51,7 @@ case "$OS-$ARCH" in
 esac
 
 if [ "$URL" = "" ]; then
-  echo "Cannot find installer for Just"
+  echo "Cannot find archive"
   exit 1
 fi
 

@@ -72,7 +72,7 @@ case "$OS-$ARCH" in
 esac
 
 if [ "$URL" = "" ]; then
-  >&2 echo "Cannot find installer for Nodejs"
+  >&2 echo "Cannot find archive"
   exit 1
 fi
 
