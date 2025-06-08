@@ -3,7 +3,7 @@
 ## Linux and MacOS
 
 ```bash
-curl -sSf https://sh.davidalsh.com/ping.sh | sh
+eval(curl -sSf https://sh.davidalsh.com/ping.sh | sh)
 ```
 
 ## Windows

@@ -1,1 +1,1 @@
-Write-Host "pong"
+Write-Host "`$env:PONG=`"pong`""

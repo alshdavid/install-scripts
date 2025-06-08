@@ -1,3 +1,4 @@
 #!/bin/sh
 
-echo pong
+>&2 echo pong
+echo "export PONG=\"pong\""
