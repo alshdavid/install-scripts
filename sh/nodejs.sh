@@ -30,9 +30,7 @@ if [ "$VERSION" = "" ]; then
 fi
 
 if [ "$VERSION" = "" ]; then
-  # VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${VERSION}" | tail -n1)
-  >&2 echo "No node version selected"
-  exit 1
+  VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${VERSION}" | tail -n1)
 fi
 
 OUT_DIR="$OUT_DIR"
