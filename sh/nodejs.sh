@@ -15,7 +15,7 @@ if [ "$NODE_VERSION" = "" ]; then
       break
     fi
     if [ -f "$CUR/.nodejs_version" ]; then
-      NODE_VERSION="$(cat "$CUR/.nvmrc")"
+      NODE_VERSION="$(cat "$CUR/.nodejs_version")"
       break
     fi
     if [ -d "$CUR/.git" ]; then

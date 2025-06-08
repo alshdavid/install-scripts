@@ -8,6 +8,26 @@ if [ "$OUT_DIR" = "" ]; then
   OUT_DIR="$HOME/.local/rust"
 fi
 
+# Find rust-toolchain
+RUST_TOOLCHAIN=""
+if [ "$RUST_TOOLCHAIN" = "" ]; then 
+  CUR="$SCRIPT_DIR"
+  while true; do
+    if [ -f "$CUR/rust-toolchain" ]; then
+      RUST_TOOLCHAIN="$(cat "$CUR/rust-toolchain")"
+      break
+    fi
+    if [ -d "$CUR/.git" ]; then
+      break
+    fi
+    NEXT=$(dirname $CUR)
+    if [ "$NEXT" = "$CUR" ]; then
+      break
+    fi
+    CUR="$NEXT"
+  done
+fi
+
 >&2 echo OUT_DIR: $OUT_DIR
 
 RUSTUP_HOME="${OUT_DIR}/rustup"
@@ -38,4 +58,8 @@ fi
 rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path -y 1>&2
+if [ "$RUST_TOOLCHAIN" = "" ]; then
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path -y 1>&2
+else 
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path  --default-toolchain $RUST_TOOLCHAIN -y 1>&2
+fi
