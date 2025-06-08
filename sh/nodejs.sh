@@ -4,18 +4,18 @@ set -e
 SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 
 # Detect Nodejs Version
-NODE_VERSION="$NODE_VERSION"
+VERSION="$NODE_VERSION"
 
 # Find .nvmrc
-if [ "$NODE_VERSION" = "" ]; then 
+if [ "$VERSION" = "" ]; then 
   CUR="$SCRIPT_DIR"
   while true; do
     if [ -f "$CUR/.nvmrc" ]; then
-      NODE_VERSION="$(cat "$CUR/.nvmrc")"
+      VERSION="$(cat "$CUR/.nvmrc")"
       break
     fi
     if [ -f "$CUR/.nodejs_version" ]; then
-      NODE_VERSION="$(cat "$CUR/.nodejs_version")"
+      VERSION="$(cat "$CUR/.nodejs_version")"
       break
     fi
     if [ -d "$CUR/.git" ]; then
@@ -29,8 +29,8 @@ if [ "$NODE_VERSION" = "" ]; then
   done
 fi
 
-if [ "$NODE_VERSION" = "" ]; then
-  # NODE_VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${NODE_VERSION}" | tail -n1)
+if [ "$VERSION" = "" ]; then
+  # VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${VERSION}" | tail -n1)
   >&2 echo "No node version selected"
   exit 1
 fi
@@ -40,7 +40,7 @@ if [ "$OUT_DIR" = "" ]; then
   OUT_DIR="$HOME/.local/nodejs"
 fi
 
->&2 echo NODE_VERSION: $NODE_VERSION
+>&2 echo VERSION: $VERSION
 >&2 echo OUT_DIR: $OUT_DIR
 
 ARCH=""
@@ -63,12 +63,12 @@ esac
 
 URL=""
 case "$OS-$ARCH" in
-  linux-amd64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz";;
-  linux-arm64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.gz";;
-  macos-amd64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-x64.tar.gz";;
-  macos-arm64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-arm64.tar.gz";;
-  windows-arm64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-win-arm64.zip";;
-  windows-amd64) URL="https://nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-win-x64.zip";;
+  linux-amd64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-linux-x64.tar.gz";;
+  linux-arm64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-linux-arm64.tar.gz";;
+  macos-amd64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-darwin-x64.tar.gz";;
+  macos-arm64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-darwin-arm64.tar.gz";;
+  windows-arm64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-win-arm64.zip";;
+  windows-amd64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-win-x64.zip";;
 esac
 
 if [ "$URL" = "" ]; then
@@ -79,7 +79,7 @@ fi
 >&2 echo URL: $URL
 >&2 echo
 
-OUT_DIR_INSTALL="${OUT_DIR}/${NODE_VERSION}"
+OUT_DIR_INSTALL="${OUT_DIR}/${VERSION}"
 PATH_PREFIX="${OUT_DIR_INSTALL}/prefix"
 PATH_PREFIX_BIN="${OUT_DIR_INSTALL}/prefix/bin"
 

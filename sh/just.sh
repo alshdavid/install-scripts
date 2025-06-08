@@ -2,12 +2,12 @@
 set -e
 
 # Default to current latest
-JUST_VERSION="$JUST_VERSION"
-if [ "$JUST_VERSION" = "" ]; then
-  JUST_VERSION=$(curl --silent "https://api.github.com/repos/casey/just/releases/latest" | jq -r '.tag_name')
+VERSION="$JUST_VERSION"
+if [ "$VERSION" = "" ]; then
+  VERSION=$(curl --silent "https://api.github.com/repos/casey/just/releases/latest" | jq -r '.tag_name')
 fi
 
-if [ "$JUST_VERSION" = "" ]; then
+if [ "$VERSION" = "" ]; then
   echo "Unable to fetch version"
   exit 1
 fi
@@ -17,7 +17,7 @@ if [ "$OUT_DIR" = "" ]; then
   OUT_DIR="$HOME/.local/just"
 fi
 
->&2 echo JUST_VERSION: $JUST_VERSION
+>&2 echo VERSION: $VERSION
 >&2 echo OUT_DIR: $OUT_DIR
 
 ARCH=""
@@ -40,12 +40,12 @@ esac
 
 URL=""
 case "$OS-$ARCH" in
-  linux-amd64) URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz";;
-  linux-arm64) URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-aarch64-unknown-linux-musl.tar.gz";;
-  macos-amd64) URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-apple-darwin.tar.gz";;
-  macos-arm64) URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-aarch64-apple-darwin.tar.gz";;
-  windows-amd64) URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-pc-windows-msvc.zip";;
-  windows-arm64) URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-aarch64-pc-windows-msvc.zip";;
+  linux-amd64) URL="https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-x86_64-unknown-linux-musl.tar.gz";;
+  linux-arm64) URL="https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-aarch64-unknown-linux-musl.tar.gz";;
+  macos-amd64) URL="https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-x86_64-apple-darwin.tar.gz";;
+  macos-arm64) URL="https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-aarch64-apple-darwin.tar.gz";;
+  windows-amd64) URL="https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-x86_64-pc-windows-msvc.zip";;
+  windows-arm64) URL="https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-aarch64-pc-windows-msvc.zip";;
 esac
 
 if [ "$URL" = "" ]; then
