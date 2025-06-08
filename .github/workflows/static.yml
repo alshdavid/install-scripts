@@ -40,7 +40,7 @@ jobs:
         - run: which go && go version
 
         - run: eval $(curl -sSf "sh.davidalsh.com/just.sh" | sh)
-        - run: which just && just version
+        - run: which just && just --version
 
         - run: eval $(curl -sSf "sh.davidalsh.com/nodejs.sh" | sh)
         - run: which node && node --version
