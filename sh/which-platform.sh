@@ -16,4 +16,5 @@ case "$(uname -s)" in
   *) OS="";;
 esac
 
-printf "$OS-$ARCH"
+>&2 echo "$OS-$ARCH"
+echo "export OS_ARCH=\"${OS}-${ARCH}\""
