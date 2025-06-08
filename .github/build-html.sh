@@ -5,11 +5,15 @@ ROOT_DIR=$(dirname $SCRIPT_DIR)
 
 html=""
 html="${html}<link rel="stylesheet" href="style.css">\n"
-html="${html}<h1># Shell Scripts #</h1>\n"
+html="${html}<h1># Shell Scripts # <small><a href=\"https://github.com/alshdavid/install-scripts\">Github</a></small></h1>\n"
 
 html="${html}<h2>🐥🍎 Unix</h2>\n"
 
 for f in $ROOT_DIR/sh/*; do
+  
+  if [ "$(basename $f)" = "ping.sh" ]; then
+    continue
+  fi
   part=""
   part="${part}<article>\n"
   part="${part}<h3>$(basename $f)</h3>\n"
@@ -25,6 +29,9 @@ done
 html="${html}<h2>🟦 Windows</h2>\n"
 
 for f in $ROOT_DIR/ps1/*; do
+  if [ "$(basename $f)" = "ping.ps1" ]; then
+    continue
+  fi
   part=""
   part="${part}<article>\n"
   part="${part}<h3>$(basename $f)</h3>\n"
