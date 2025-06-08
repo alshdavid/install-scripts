@@ -22,32 +22,16 @@ fi
 >&2 echo VERSION: $VERSION
 >&2 echo OUT_DIR: $OUT_DIR
 
-ARCH=""
-case "$(uname -m)" in
-  x86_64 | x86-64 | x64 | amd64) ARCH="amd64";;
-  aarch64 | arm64) ARCH="arm64";;
-  *) ARCH="";;
-esac
-
-OS=""
-case "$(uname -s)" in
-  Darwin) OS="macos";;
-  Linux) OS="linux";;
-  MINGW64_NT* | Windows_NT) OS="windows";;
-  *) OS="";;
-esac
-
->&2 echo ARCH: $ARCH
->&2 echo OS: $OS
+eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
 
 URL=""
-case "$OS-$ARCH" in
-  linux-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  linux-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  macos-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  macos-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  windows-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  windows-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
+case "$OS_ARCH" in
+  linux-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-linux-amd64.tar.gz";;
+  linux-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-linux-arm64.tar.gz";;
+  macos-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-macos-amd64.tar.gz";;
+  macos-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-macos-arm64.tar.gz";;
+  windows-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-windows-amd64.tar.gz";;
+  windows-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-windows-arm64.tar.gz";;
 esac
 
 if [ "$URL" = "" ]; then
