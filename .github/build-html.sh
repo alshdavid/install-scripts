@@ -14,7 +14,7 @@ for f in $ROOT_DIR/sh/*; do
   part="${part}<article>\n"
   part="${part}<h3>$(basename $f)</h3>\n"
   part="${part}<code>\n"
-  part="${part}sh -sSf \"https://sh.davidalsh.com/$(basename $f)\" | sh\n"
+  part="${part}eval $(curl -sSf \"sh.davidalsh.com/$(basename $f)\" | sh)\n"
   part="${part}</code>\n"
   part="${part}</article>\n"
 
@@ -29,7 +29,7 @@ for f in $ROOT_DIR/ps1/*; do
   part="${part}<article>\n"
   part="${part}<h3>$(basename $f)</h3>\n"
   part="${part}<code>\n"
-  part="${part}iex ((New-Object System.Net.WebClient).DownloadString('https://sh.davidalsh.com/$(basename $f)'))\n"
+  part="${part}iex ((New-Object System.Net.WebClient).DownloadString('sh.davidalsh.com/$(basename $f)'))\n"
   part="${part}</code>\n"
   part="${part}</article>\n"
 
