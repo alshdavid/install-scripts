@@ -1,1 +1,2 @@
-Write-Host "`$env:PONG=`"pong`""
+Write-Error "pong"
+$env:PONG="pong"
