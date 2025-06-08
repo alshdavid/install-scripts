@@ -7,7 +7,27 @@ SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 VERSION="$NODE_VERSION"
 
 # Find .nvmrc
-eval $(curl -sSf "sh.davidalsh.com/find-parent-file.sh" | sh -s -- "VERSION" ".nvmrc")
+if [ "$VERSION" = "" ]; then 
+  CUR="$SCRIPT_DIR"
+  while true; do
+    if [ -f "$CUR/.nvmrc" ]; then
+      VERSION="$(cat "$CUR/.nvmrc")"
+      break
+    fi
+    if [ -f "$CUR/.nodejs_version" ]; then
+      VERSION="$(cat "$CUR/.nodejs_version")"
+      break
+    fi
+    if [ -d "$CUR/.git" ]; then
+      break
+    fi
+    NEXT=$(dirname $CUR)
+    if [ "$NEXT" = "$CUR" ]; then
+      break
+    fi
+    CUR="$NEXT"
+  done
+fi
 
 if [ "$VERSION" = "" ]; then
   VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${VERSION}" | tail -n1)
@@ -21,10 +41,26 @@ fi
 >&2 echo VERSION: $VERSION
 >&2 echo OUT_DIR: $OUT_DIR
 
-eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
+ARCH=""
+case "$(uname -m)" in
+  x86_64 | x86-64 | x64 | amd64) ARCH="amd64";;
+  aarch64 | arm64) ARCH="arm64";;
+  *) ARCH="";;
+esac
+
+OS=""
+case "$(uname -s)" in
+  Darwin) OS="macos";;
+  Linux) OS="linux";;
+  MINGW64_NT* | Windows_NT) OS="windows";;
+  *) OS="";;
+esac
+
+>&2 echo ARCH: $ARCH
+>&2 echo OS: $OS
 
 URL=""
-case "$OS_ARCH" in
+case "$OS-$ARCH" in
   linux-amd64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-linux-x64.tar.gz";;
   linux-arm64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-linux-arm64.tar.gz";;
   macos-amd64) URL="https://nodejs.org/download/release/v${VERSION}/node-v${VERSION}-darwin-x64.tar.gz";;
