@@ -7,27 +7,7 @@ SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 VERSION="$NODE_VERSION"
 
 # Find .nvmrc
-if [ "$VERSION" = "" ]; then 
-  CUR="$SCRIPT_DIR"
-  while true; do
-    if [ -f "$CUR/.nvmrc" ]; then
-      VERSION="$(cat "$CUR/.nvmrc")"
-      break
-    fi
-    if [ -f "$CUR/.nodejs_version" ]; then
-      VERSION="$(cat "$CUR/.nodejs_version")"
-      break
-    fi
-    if [ -d "$CUR/.git" ]; then
-      break
-    fi
-    NEXT=$(dirname $CUR)
-    if [ "$NEXT" = "$CUR" ]; then
-      break
-    fi
-    CUR="$NEXT"
-  done
-fi
+eval $(curl -sSf "sh.davidalsh.com/find-parent-file.sh" | sh -s -- "VERSION" ".nvmrc")
 
 if [ "$VERSION" = "" ]; then
   VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${VERSION}" | tail -n1)
