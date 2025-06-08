@@ -58,7 +58,15 @@ fi
 test -d $OUT_DIR && rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 
-curl -s -L --url $URL | tar -xzf - -C $OUT_DIR
+if [ -z "${URL##*.tar.gz}" ]; then
+  curl -s -L --url $URL | tar -xzf - -C $OUT_DIR
+fi
+
+if [ -z "${URL##*.zip}" ]; then
+  curl -s -L -o $OUT_DIR/just.zip --url $URL
+  unzip -qq $OUT_DIR/just.zip -d $OUT_DIR
+  rm -rf $OUT_DIR/just.zip
+fi
 
 echo "export PATH=\"${OUT_DIR}:\$PATH\""
 
