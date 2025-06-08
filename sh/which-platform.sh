@@ -16,5 +16,11 @@ case "$(uname -s)" in
   *) OS="";;
 esac
 
->&2 echo "$OS-$ARCH"
-echo "export OS_ARCH=\"${OS}-${ARCH}\""
+export OS_ARCH="${OS}-${ARCH}"
+
+>&2 echo "$OS_ARCH"
+echo "export OS_ARCH=\"${OS_ARCH}\""
+
+if ! [ "$GITHUB_ENV" = "" ]; then
+  echo "OS_ARCH=${OS_ARCH}" >> $GITHUB_ENV
+fi
