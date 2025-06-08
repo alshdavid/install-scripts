@@ -31,3 +31,29 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  test:
+    runs-on: 'ubuntu-latest'
+    needs: [deploy]
+    steps:
+        - run: eval $(curl -sSf "sh.davidalsh.com/go.sh" | sh)
+        - run: which go && go version
+
+        - run: eval $(curl -sSf "sh.davidalsh.com/just.sh" | sh)
+        - run: which just && just version
+
+        - run: eval $(curl -sSf "sh.davidalsh.com/nodejs.sh" | sh)
+        - run: which node && node --version
+        
+        - run: eval $(curl -sSf "sh.davidalsh.com/procmon.sh" | sh)
+        - run: which procmon && procmon --help
+
+        - run: eval $(curl -sSf "sh.davidalsh.com/rrm.sh" | sh)
+        - run: which rrm && rrm --help
+
+        - run: eval $(curl -sSf "sh.davidalsh.com/rust.sh" | sh)
+        - run: which cargo && cargo --version
+
+        - run: eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
+        - run: echo $OS_ARCH
+
