@@ -25,6 +25,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - run: cp ps1/* .
       - run: cp sh/* .
+      - run: .github/build-html.sh
       - uses: actions/upload-pages-artifact@v3
         with: { path: '.' }
       - name: Deploy to GitHub Pages
