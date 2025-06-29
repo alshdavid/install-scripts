@@ -4,10 +4,11 @@ set -e
 # Default to current latest
 VERSION="$GO_VERSION"
 if [ "$VERSION" = "" ]; then
-  VERSION=$(curl -s https://go.dev/dl/\?mode=json | jq -r '.[0].version')
-else
-  VERSION="go$VERSION"
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/go/latest)
 fi
+
+# The archives are prefixed
+VERSION="go$VERSION"
 
 if [ "$VERSION" = "" ]; then
   echo "Unable to fetch version"

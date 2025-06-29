@@ -4,7 +4,7 @@ set -e
 # Default to current latest
 VERSION="$JUST_VERSION"
 if [ "$VERSION" = "" ]; then
-  VERSION=$(curl --silent "https://api.github.com/repos/casey/just/releases/latest" | jq -r '.tag_name')
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/just/latest)
 fi
 
 if [ "$VERSION" = "" ]; then

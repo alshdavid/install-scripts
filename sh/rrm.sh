@@ -6,7 +6,7 @@ NAME="rrm"
 # Default to current latest
 VERSION="$RRM_VERSION"
 if [ "$VERSION" = "" ]; then
-  VERSION=$(curl --silent "https://api.github.com/repos/alshdavid/rrm/releases/latest" | jq -r '.tag_name')
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/$NAME/latest)
 fi
 
 if [ "$VERSION" = "" ]; then

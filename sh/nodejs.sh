@@ -30,7 +30,23 @@ if [ "$VERSION" = "" ]; then
 fi
 
 if [ "$VERSION" = "" ]; then
-  VERSION=$(curl -sSL https://nodejs.org/download/release/ |  sed -E 's/<a.*>(v.*\..*\.[0-9]+\/)<\/a>.*/\1/g' |  grep "^v" | sed -E "s/v(.*)\//\1/g" | sort -u -k 1,1n -k 2,2n -k 3,3n -t . | grep "^${VERSION}" | tail -n1)
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/nodejs/latest)
+fi
+
+if [ "$VERSION" = "22" ]; then
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/nodejs/22)
+fi
+if [ "$VERSION" = "23" ]; then
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/nodejs/23)
+fi
+if [ "$VERSION" = "24" ]; then
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/nodejs/24)
+fi
+if [ "$VERSION" = "current" ]; then
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/nodejs/current)
+fi
+if [ "$VERSION" = "latest" ]; then
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/nodejs/latest)
 fi
 
 OUT_DIR="$OUT_DIR"

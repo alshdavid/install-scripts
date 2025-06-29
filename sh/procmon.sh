@@ -6,7 +6,7 @@ NAME="procmon"
 # Default to current latest
 VERSION="$RRM_VERSION"
 if [ "$VERSION" = "" ]; then
-  VERSION=$(curl --silent "https://api.github.com/repos/alshdavid/procmon/releases/latest" | jq -r '.tag_name')
+  VERSION=$(curl -s https://sh.davidalsh.com/versions/$NAME/latest)
 fi
 
 if [ "$VERSION" = "" ]; then
