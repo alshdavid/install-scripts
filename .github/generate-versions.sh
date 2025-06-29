@@ -27,3 +27,7 @@ curl --silent "https://api.github.com/repos/alshdavid/procmon/releases/latest" |
 # Procmon
 mkdir versions/rrm
 curl --silent "https://api.github.com/repos/alshdavid/rrm/releases/latest" | jq -r '.tag_name' > versions/rrm/latest
+
+# uutils
+mkdir versions/uutils
+curl --silent "https://api.github.com/repos/uutils/coreutils/releases/latest" | jq -r '.tag_name' > versions/uutils/latest
