@@ -57,6 +57,7 @@ test -d $OUT_DIR && rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 
 if [ "$GITHUB_PATH" != "" ]; then
+  >&2 echo Adding to GITHUB_PATH
   echo $OUT_DIR >> $GITHUB_PATH
 fi
 
