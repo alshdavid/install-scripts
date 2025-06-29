@@ -70,16 +70,15 @@ if [ -z "${URL##*.zip}" ]; then
   rm -rf $OUT_DIR/tmp
 fi
 
-export PATH="${OUT_DIR}:$PATH"
-
-
-for entry in $(./coreutils --list); do
-  if [ "$OS" = "windows" ]; then
-    ln "${OUT_DIR}/coreutils" "${OUT_DIR}/${entry}"
-  else
+if [ "$OS" = "windows" ]; then
+  for entry in $("$OUT_DIR/coreutils.exe" --list); do
     ln "${OUT_DIR}/coreutils.exe" "${OUT_DIR}/${entry}.exe"
-  fi
-done
+  done
+else
+  for entry in $("$OUT_DIR/coreutils" --list); do
+    ln "${OUT_DIR}/coreutils" "${OUT_DIR}/${entry}"
+  done
+fi
 
 echo "export PATH=\"${OUT_DIR}:\$PATH\""
 
