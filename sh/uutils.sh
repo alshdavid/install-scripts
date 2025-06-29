@@ -70,6 +70,17 @@ if [ -z "${URL##*.zip}" ]; then
   rm -rf $OUT_DIR/tmp
 fi
 
+export PATH="${OUT_DIR}:$PATH"
+
+
+for entry in $(./coreutils --list); do
+  if [ "$OS" = "windows" ]; then
+    ln "${OUT_DIR}/coreutils" "${OUT_DIR}/${entry}"
+  else
+    ln "${OUT_DIR}/coreutils.exe" "${OUT_DIR}/${entry}.exe"
+  fi
+done
+
 echo "export PATH=\"${OUT_DIR}:\$PATH\""
 
 if [ "$GITHUB_PATH" != "" ]; then
