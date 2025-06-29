@@ -65,7 +65,7 @@ if [ -z "${URL##*.zip}" ]; then
   mkdir -p $OUT_DIR/tmp
   curl -s -L -o $OUT_DIR/tmp/uutils.zip --url $URL
   unzip -qq $OUT_DIR/tmp/uutils.zip -d $OUT_DIR/tmp
-  mv $OUT_DIR/tmp/uutils-* $OUT_DIR/tmp/uutils
+  mv $OUT_DIR/tmp/coreutils-* $OUT_DIR/tmp/uutils
   mv $OUT_DIR/tmp/uutils/* $OUT_DIR
   rm -rf $OUT_DIR/tmp
 fi
