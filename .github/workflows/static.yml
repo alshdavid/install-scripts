@@ -101,7 +101,9 @@ jobs:
         # - run: eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
         # - run: echo $OS_ARCH
 
-        - run: eval $(curl -sSf "sh.davidalsh.com/uutils.sh" | sh)
+        - run: |
+            eval $(curl -sSf "sh.davidalsh.com/uutils.sh" | sh)
+            where coreutils
         - run: ls $HOME/.local/uutils
         - run: where coreutils
         - run: where rm
