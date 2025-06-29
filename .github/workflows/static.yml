@@ -103,6 +103,8 @@ jobs:
 
         - run: eval $(curl -sSf "sh.davidalsh.com/uutils.sh" | sh)
         - run: ls $HOME/.local/uutils
-        - run: ls $HOME/.local/uutils/tmp
+        - run: which rm
+        - shell: pwsh
+          run: Get-Command rm
 
 
