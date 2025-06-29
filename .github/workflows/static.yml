@@ -103,10 +103,11 @@ jobs:
 
         - run: eval $(curl -sSf "sh.davidalsh.com/uutils.sh" | sh)
         - run: ls $HOME/.local/uutils
-        - run: echo $GITHUB_PATH
-        - run: cat $GITHUB_PATH
+        - run: where coreutils
         - run: where rm
         - shell: pwsh
-          run: Get-Command rm
+          run: |
+            Remove-Item Alias:"rm"
+            Get-Command rm
 
 
