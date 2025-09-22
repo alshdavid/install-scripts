@@ -31,3 +31,7 @@ curl --silent "https://api.github.com/repos/alshdavid/rrm/releases/latest" | jq 
 # uutils
 mkdir versions/uutils
 curl --silent "https://api.github.com/repos/uutils/coreutils/releases/latest" | jq -r '.tag_name' > versions/uutils/latest
+
+# Terraform
+mkdir versions/terraform
+curl --silent "https://api.github.com/repos/hashicorp/terraform/releases/latest" | jq -r '.tag_name' | { read VERSION; echo "${VERSION//v}" > versions/terraform/latest; } 
