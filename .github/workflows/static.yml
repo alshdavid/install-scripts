@@ -29,10 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - run: eval $(echo cat ./sh/nodejs.sh | sh) 
       - run: cp ps1/* .
       - run: cp sh/* .
       - run: sh .github/build-html.sh
-      - run: sh .github/generate-versions.sh
+      - run: node .github/generate-versions.mjs
       - uses: actions/upload-pages-artifact@v3
         with: { path: '.' }
       - name: Deploy to GitHub Pages
