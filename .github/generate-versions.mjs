@@ -101,3 +101,30 @@ void async function terraform() {
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
   console.log(`${project}: ${version}`)
 }()
+
+void async function python() {
+  const project = "python"
+  await fs.promises.mkdir(path.join(versions, project))
+
+  const resp = await globalThis.fetch('https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest')
+  const body = await resp.json()
+
+  for (const asset of body.assets) {
+    if (!asset.name.includes("x86_64-") && !asset.name.includes("aarch64")) continue
+    if (!asset.name.includes("linux-gnu-install_only_stripped") && !asset.name.includes("windows-msvc-install_only_stripped") && !asset.name.includes("darwin-install_only_stripped")) continue
+    
+    const segs = asset.name.split('-')
+
+    const [major, minor, _patch] = segs[1].split('+')[0].split('.')
+    const arch = {
+      'x86_64': 'amd64',
+      'aarch64': 'arm64'
+    }[segs[2]]
+    const os = segs[4]
+
+    const version = `${os}-${arch}-${major}.${minor}`
+
+    await fs.promises.writeFile(path.join(versions, project, version), asset.browser_download_url, 'utf8')
+    console.log(`${project}: ${version}`)
+  }
+}()
