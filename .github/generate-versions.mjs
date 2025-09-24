@@ -120,7 +120,11 @@ void async function python() {
       'x86_64': 'amd64',
       'aarch64': 'arm64'
     }[segs[2]]
-    const os = segs[4]
+    const os = {
+      'darwin': 'macos',
+      'windows': 'windows',
+      'linux': 'linux',
+    }[segs[4]]
 
     const version = `${os}-${arch}-${major}.${minor}`
 
