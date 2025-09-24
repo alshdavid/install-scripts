@@ -8,7 +8,7 @@ VERSION="$PYTHON_VERSION"
 
 # Default to home directory
 if [ "$OUT_DIR" = "" ]; then
-  OUT_DIR="$HOME/.local/$NAME"
+  OUT_DIR="$HOME/.local/python"
 fi
 
 if [ "$VERSION" = "" ]; then
@@ -52,26 +52,26 @@ fi
 
 >&2 echo URL: $URL
 
-test -d $OUT_DIR/python && rm -rf $OUT_DIR/python
-mkdir -p $OUT_DIR/python
-mkdir -p $OUT_DIR/python/tmp/$VERSION
+test -d $OUT_DIR && rm -rf $OUT_DIR
+mkdir -p $OUT_DIR
+mkdir -p $OUT_DIR/tmp/$VERSION
 
 if [ -z "${URL##*.tar.gz}" ]; then
-  curl -s -L --url $URL | tar -xzf - -C $OUT_DIR/python/tmp/$VERSION
-  mv $OUT_DIR/python/tmp/$VERSION/python $OUT_DIR/python/$VERSION
-  rm -rf $OUT_DIR/python/tmp
+  curl -s -L --url $URL | tar -xzf - -C $OUT_DIR/tmp/$VERSION
+  mv $OUT_DIR/tmp/$VERSION/python $OUT_DIR/$VERSION
+  rm -rf $OUT_DIR/tmp
 fi
 
 if [ "${OS}" = "windows" ]; then
-  echo "export PATH=\"${OUT_DIR}/python/${VERSION}:\$PATH\""
+  echo "export PATH=\"${OUT_DIR}/${VERSION}:\$PATH\""
 
   if [ "$GITHUB_PATH" != "" ]; then
-    echo "${OUT_DIR}/python/${VERSION}" >> $GITHUB_PATH
+    echo "${OUT_DIR}/${VERSION}" >> $GITHUB_PATH
   fi
 else
-  echo "export PATH=\"${OUT_DIR}/python/${VERSION}/bin:\$PATH\""
+  echo "export PATH=\"${OUT_DIR}/${VERSION}/bin:\$PATH\""
 
   if [ "$GITHUB_PATH" != "" ]; then
-    echo "${OUT_DIR}/python/${VERSION}/bin" >> $GITHUB_PATH
+    echo "${OUT_DIR}/${VERSION}/bin" >> $GITHUB_PATH
   fi
 fi
