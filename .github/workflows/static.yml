@@ -71,6 +71,9 @@ jobs:
         - run: eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
         - run: echo $OS_ARCH
 
+        - run: export PYTHON_VERSION=3.12 eval $(curl -sSf "sh.davidalsh.com/python.sh" | sh)
+        - run: echo $OS_ARCH
+
   # test-windows:
   #   runs-on: 'windows-latest'
   #   needs: [deploy]

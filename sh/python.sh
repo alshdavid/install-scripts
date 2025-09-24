@@ -11,6 +11,29 @@ if [ "$OUT_DIR" = "" ]; then
   OUT_DIR="$HOME/.local/python"
 fi
 
+# Find .pyvm
+if [ "$VERSION" = "" ]; then 
+  CUR="$SCRIPT_DIR"
+  while true; do
+    if [ -f "$CUR/.pyvm" ]; then
+      VERSION="$(cat "$CUR/.pyvm")"
+      break
+    fi
+    if [ -f "$CUR/.python_version" ]; then
+      VERSION="$(cat "$CUR/.python_version")"
+      break
+    fi
+    if [ -d "$CUR/.git" ]; then
+      break
+    fi
+    NEXT=$(dirname $CUR)
+    if [ "$NEXT" = "$CUR" ]; then
+      break
+    fi
+    CUR="$NEXT"
+  done
+fi
+
 if [ "$VERSION" = "" ]; then
   echo "Unable to fetch version"
   exit 1
@@ -42,7 +65,6 @@ fi
 >&2 echo ARCH: $ARCH
 >&2 echo OS: $OS
 
-echo "http://sh.davidalsh.com/versions/python/${OS}-${ARCH}-${VERSION}"
 URL=$(curl -s "http://sh.davidalsh.com/versions/python/${OS}-${ARCH}-${VERSION}" | tr -d " \t\n\r")
 
 if [ "$URL" = "" ]; then
@@ -56,11 +78,9 @@ test -d $OUT_DIR && rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 mkdir -p $OUT_DIR/tmp/$VERSION
 
-if [ -z "${URL##*.tar.gz}" ]; then
-  curl -s -L --url $URL | tar -xzf - -C $OUT_DIR/tmp/$VERSION
-  mv $OUT_DIR/tmp/$VERSION/python $OUT_DIR/$VERSION
-  rm -rf $OUT_DIR/tmp
-fi
+curl -s -L --url $URL | tar -xzf - -C $OUT_DIR/tmp/$VERSION
+mv $OUT_DIR/tmp/$VERSION/python $OUT_DIR/$VERSION
+rm -rf $OUT_DIR/tmp
 
 if [ "${OS}" = "windows" ]; then
   echo "export PATH=\"${OUT_DIR}/${VERSION}:\$PATH\""
