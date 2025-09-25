@@ -1,18 +1,40 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as url from 'node:url'
+import * as githubApi from './utils/github.mts'
+import * as nodejsApi from './utils/nodejs.mts'
 
 const filename = url.fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const root = path.dirname(dirname)
 const versions = path.join(root, 'versions')
 
-if (fs.existsSync(versions)) {
-  fs.rmSync(versions, { recursive: true, force: true })
-}
-fs.mkdirSync(versions)
+export async function main() {
+  if (fs.existsSync(versions)) {
+    fs.rmSync(versions, { recursive: true, force: true })
+  }
+  fs.mkdirSync(versions)
 
-void async function go() {
+  await Promise.all([
+    go(),
+    just(),
+    nodejs(),
+    procmon(),
+    rrm(),
+    uutils(),
+    terraform(),
+    python(),
+  ])
+
+  // Add .txt for correct mime type
+  for (const dir of await fs.promises.readdir(path.join(versions))) {
+    for (const file of await fs.promises.readdir(path.join(versions, dir))) {
+      await fs.promises.cp(path.join(versions, dir, file), path.join(versions, dir, file + '.txt'))
+    }
+  }
+}
+
+export async function go() {
   const project = "go"
   const resp = await globalThis.fetch('https://go.dev/dl/?mode=json')
   const body = await resp.json()
@@ -22,27 +44,25 @@ void async function go() {
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
 
   console.log(`${project}: ${version}`)
-}()
+}
 
-void async function just() {
+export async function just() {
   const project = "just"
-  const resp = await globalThis.fetch('https://api.github.com/repos/casey/just/releases/latest')
-  const body = await resp.json()
-  const version = body.tag_name
+  const resp = await githubApi.getRelease('casey/just')
+  const version = resp.tag_name
 
   await fs.promises.mkdir(path.join(versions, project))
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
   console.log(`${project}: ${version}`)
-}()
+}
 
-void async function nodejs() {
+export async function nodejs() {
   const project = "nodejs"
-  const resp = await globalThis.fetch('https://nodejs.org/download/release/index.json')
-  const body = await resp.json()
+  const resp = await nodejsApi.getReleases()
 
-  let current = body[0].version.replace("v", "")
+  let current = resp[0].version.replace("v", "")
   let lts = null
-  for (const release of body) {
+  for (const release of resp) {
     if (release.lts) {
       lts = release.version.replace("v", "")
       break
@@ -56,60 +76,55 @@ void async function nodejs() {
 
   console.log(`${project} current: ${current}`)
   console.log(`${project} lts: ${lts}`)
-}()
+}
 
-void async function procmon() {
+export async function procmon() {
   const project = "procmon"
-  const resp = await globalThis.fetch('https://api.github.com/repos/alshdavid/procmon/releases/latest')
-  const body = await resp.json()
-  const version = body.tag_name
+  const resp = await githubApi.getRelease('alshdavid/procmon')
+  const version = resp.tag_name
 
   await fs.promises.mkdir(path.join(versions, project))
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
   console.log(`${project}: ${version}`)
-}()
+}
 
-void async function rrm() {
+export async function rrm() {
   const project = "rrm"
-  const resp = await globalThis.fetch('https://api.github.com/repos/alshdavid/rrm/releases/latest')
-  const body = await resp.json()
-  const version = body.tag_name
+  const resp = await githubApi.getRelease('alshdavid/rrm')
+  const version = resp.tag_name
 
   await fs.promises.mkdir(path.join(versions, project))
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
   console.log(`${project}: ${version}`)
-}()
+}
 
-void async function uutils() {
+export async function uutils() {
   const project = "uutils"
-  const resp = await globalThis.fetch('https://api.github.com/repos/uutils/coreutils/releases/latest')
-  const body = await resp.json()
-  const version = body.tag_name
+  const resp = await githubApi.getRelease('uutils/coreutils')
+  const version = resp.tag_name
 
   await fs.promises.mkdir(path.join(versions, project))
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
   console.log(`${project}: ${version}`)
-}()
+}
 
-void async function terraform() {
+export async function terraform() {
   const project = "terraform"
-  const resp = await globalThis.fetch('https://api.github.com/repos/hashicorp/terraform/releases/latest')
-  const body = await resp.json()
-  const version = body.tag_name.replace("v", "")
+  const resp = await githubApi.getRelease('hashicorp/terraform')
+  const version = resp.tag_name.replace("v", "")
 
   await fs.promises.mkdir(path.join(versions, project))
   await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
   console.log(`${project}: ${version}`)
-}()
+}
 
-void async function python() {
+export async function python() {
   const project = "python"
   await fs.promises.mkdir(path.join(versions, project))
 
-  const resp = await globalThis.fetch('https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest')
-  const body = await resp.json()
+  const resp = await githubApi.getRelease('astral-sh/python-build-standalone')
 
-  for (const asset of body.assets) {
+  for (const asset of resp.assets) {
     if (!asset.name.includes("x86_64-") && !asset.name.includes("aarch64")) continue
     if (!asset.name.includes("linux-gnu-install_only_stripped") && !asset.name.includes("windows-msvc-install_only_stripped") && !asset.name.includes("darwin-install_only_stripped")) continue
     
@@ -131,4 +146,4 @@ void async function python() {
     await fs.promises.writeFile(path.join(versions, project, version), asset.browser_download_url, 'utf8')
     console.log(`${project}: ${version}`)
   }
-}()
+}

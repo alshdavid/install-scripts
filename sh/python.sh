@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -e
 
 SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
@@ -6,10 +6,22 @@ SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 # Detect Python Version
 VERSION="$PYTHON_VERSION"
 
-# Default to home directory
-if [ "$OUT_DIR" = "" ]; then
-  OUT_DIR="$HOME/.local/python"
-fi
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --version*|-v*)
+      case "$1" in
+        *=*)
+          VERSION="${1#*=}"
+          ;;
+      esac
+      ;;
+    *)
+      echo "Error: Invalid argument" >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
 
 # Find .pyvm
 if [ "$VERSION" = "" ]; then 
@@ -39,8 +51,15 @@ if [ "$VERSION" = "" ]; then
   exit 1
 fi
 
+# Default to home directory
+if [ "$OUT_DIR" = "" ]; then
+  OUT_DIR="$HOME/.local/python"
+fi
+
 >&2 echo VERSION: $VERSION
 >&2 echo OUT_DIR: $OUT_DIR
+
+exit 0
 
 ARCH=""
 case "$(uname -m)" in

@@ -1,0 +1,61 @@
+<style>
+* {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+code {
+  display: block;
+  background-color: #eee;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+}
+
+article {
+  border-top: 1px solid #666;
+  margin: 20px 0;
+}
+</style>
+
+<h1># Shell Scripts # <small><a href="https://github.com/alshdavid/install-scripts">Github</a></small></h1>
+
+<h2>🐥🍎 Unix</h2>
+
+<% 
+  for (const file of await ctx.fs.readdir(ctx.path.join(ctx.root, 'sh'))) { 
+    if (file.endsWith('.md')) continue
+    const docName = ctx.path.parse(file).name + '.md'
+%>
+<% if (ctx.fs.exists(ctx.path.join(ctx.root, 'sh', docName))) { %>
+<%- await include(ctx.path.join(ctx.root, 'sh', docName)) %>
+<% } else { %>
+  <article>
+  <h3><%= file %></h3>
+  <code>
+  eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | sh)
+  </code>
+  </article>
+<% } %>
+<% } %>
+
+
+<h2>🟦 Windows</h2>
+
+<% 
+  for (const file of await ctx.fs.readdir(ctx.path.join(ctx.root, 'ps1'))) { 
+    if (file.endsWith('.md')) continue
+    const docName = ctx.path.parse(file).name + '.md'
+%>
+<% if (ctx.fs.exists(ctx.path.join(ctx.root, 'ps1', docName))) { %>
+<%- await include(ctx.path.join(ctx.root, 'ps1', docName)) %>
+<% } else { %>
+  <article>
+  <h3><%= file %></h3>
+  <code>
+  iex ((New-Object System.Net.WebClient).DownloadString('https://sh.davidalsh.com/<%= file %>'))
+  </code>
+  </article>
+<% } %>
+<% } %>

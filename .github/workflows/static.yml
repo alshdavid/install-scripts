@@ -32,8 +32,8 @@ jobs:
       - run: eval $(echo cat ./sh/nodejs.sh | sh) 
       - run: cp ps1/* .
       - run: cp sh/* .
-      - run: sh .github/build-html.sh
-      - run: node .github/generate-versions.mjs
+      - run: npm install
+      - run: node ./site/main.mts
       - uses: actions/upload-pages-artifact@v3
         with: { path: '.' }
       - name: Deploy to GitHub Pages
