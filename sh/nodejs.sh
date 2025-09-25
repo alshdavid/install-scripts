@@ -3,10 +3,34 @@ set -e
 
 SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 
-# Detect Nodejs Version
-VERSION="$NODE_VERSION"
+# Version from env
+if ! [ "$NODEJS_VERSION" = "" ];then
+  VERSION="$NODEJS_VERSION"
+fi
 
-# Find .nvmrc
+if ! [ "$NODE_VERSION" = "" ];then
+  VERSION="$NODE_VERSION"
+fi
+
+# Version from args
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --version*|-v*)
+      case "$1" in
+        *=*)
+          VERSION="${1#*=}"
+          ;;
+      esac
+      ;;
+    *)
+      echo "Error: Invalid argument" >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# Version from .nvmrc
 if [ "$VERSION" = "" ]; then 
   CUR="$SCRIPT_DIR"
   while true; do
@@ -68,7 +92,7 @@ OS=""
 case "$(uname -s)" in
   Darwin) OS="macos";;
   Linux) OS="linux";;
-  MINGW64_NT* | Windows_NT) OS="windows";;
+  MINGW64_NT* | Windows_NT | MSYS_NT*) OS="windows";;
   *) OS="";;
 esac
 

@@ -12,7 +12,7 @@ OS=""
 case "$(uname -s)" in
   Darwin) OS="macos";;
   Linux) OS="linux";;
-  MINGW64_NT* | Windows_NT) OS="windows";;
+  MINGW64_NT* | Windows_NT | MSYS_NT*) OS="windows";;
   *) OS="";;
 esac
 

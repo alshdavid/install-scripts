@@ -7,7 +7,7 @@ import * as nodejsApi from './utils/nodejs.mts'
 const filename = url.fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const root = path.dirname(dirname)
-const versions = path.join(root, 'versions')
+const versions = path.join(root, 'dist', 'versions')
 
 export async function main() {
   if (fs.existsSync(versions)) {
@@ -69,7 +69,20 @@ export async function nodejs() {
     }
   }
 
+  const manifest: Record<string, string> = {}
+
+  for (const release of resp) {
+    const version = release.version.replace("v", "")
+    const [major, minor] = version.split('.')
+    if (!manifest[major]) manifest[major] = version
+    if (!manifest[`${major}.${minor}`]) manifest[`${major}.${minor}`] = version
+  }
+  
   await fs.promises.mkdir(path.join(versions, project))
+  
+  for (const [specifier, version] of Object.entries(manifest)) {
+    await fs.promises.writeFile(path.join(versions, project, specifier), version, 'utf8')
+  }
   await fs.promises.writeFile(path.join(versions, project, 'latest'), current, 'utf8')
   await fs.promises.writeFile(path.join(versions, project, 'current'), current, 'utf8')
   await fs.promises.writeFile(path.join(versions, project, 'lts'), lts, 'utf8')

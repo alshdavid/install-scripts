@@ -59,8 +59,6 @@ fi
 >&2 echo VERSION: $VERSION
 >&2 echo OUT_DIR: $OUT_DIR
 
-exit 0
-
 ARCH=""
 case "$(uname -m)" in
   x86_64 | x86-64 | x64 | amd64) ARCH="amd64";;

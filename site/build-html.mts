@@ -12,7 +12,7 @@ export async function main() {
   const template = await fs.promises.readFile(path.join(dirname, "index.ejs"), {
     encoding: "utf-8",
   });
-  const outfile = path.join(root, "index.html");
+  const outfile = path.join(root, "dist", "index.html");
 
   const ctx = {
     get root() {
