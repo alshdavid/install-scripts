@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/sh
 set -e
 
 SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
@@ -12,6 +12,13 @@ while [ $# -gt 0 ]; do
       case "$1" in
         *=*)
           VERSION="${1#*=}"
+          ;;
+      esac
+      ;;
+    --out-dir*|-o*)
+      case "$1" in
+        *=*)
+          OUT_DIR="${1#*=}"
           ;;
       esac
       ;;

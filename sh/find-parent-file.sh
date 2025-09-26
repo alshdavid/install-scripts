@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/sh
 set -e
 
 SCRIPT_DIR=$PWD
