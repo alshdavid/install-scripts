@@ -99,23 +99,23 @@ fi
 >&2 echo URL: $URL
 
 test -d $OUT_DIR && rm -rf $OUT_DIR
-mkdir -p $OUT_DIR
-mkdir -p $OUT_DIR/tmp/$VERSION
+mkdir -p "$HOME/.tmp/python_${VERSION}"
 
-curl -s -L --url $URL | tar -xzf - -C $OUT_DIR/tmp/$VERSION
-mv $OUT_DIR/tmp/$VERSION/python $OUT_DIR/$VERSION
-rm -rf $OUT_DIR/tmp
+curl -s -L --url $URL | tar -xzf - -C "$HOME/.tmp/python_${VERSION}"
+mkdir -p $(dirname $OUT_DIR)
+mv "$HOME/.tmp/python_${VERSION}/python" $OUT_DIR
+rm -rf "$HOME/.tmp/python_${VERSION}"
 
 if [ "${OS}" = "windows" ]; then
-  echo "export PATH=\"${OUT_DIR}/${VERSION}:\$PATH\""
+  echo "export PATH=\"${OUT_DIR}:\$PATH\""
 
   if [ "$GITHUB_PATH" != "" ]; then
-    echo "${OUT_DIR}/${VERSION}" >> $GITHUB_PATH
+    echo "${OUT_DIR}" >> $GITHUB_PATH
   fi
 else
-  echo "export PATH=\"${OUT_DIR}/${VERSION}/bin:\$PATH\""
+  echo "export PATH=\"${OUT_DIR}/bin:\$PATH\""
 
   if [ "$GITHUB_PATH" != "" ]; then
-    echo "${OUT_DIR}/${VERSION}/bin" >> $GITHUB_PATH
+    echo "${OUT_DIR}/bin" >> $GITHUB_PATH
   fi
 fi

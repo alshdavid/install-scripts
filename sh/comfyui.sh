@@ -58,15 +58,18 @@ fi
 echo "*** Creating ComfyUI Folder ***"
 echo ""
 
-mkdir $PWD/ComfyUI
-mkdir $PWD/share
-mkdir $PWD/bin
+DIR_ROOT=$PWD/ComfyUI
+
+mkdir $DIR_ROOT
+mkdir $DIR_ROOT/share
+mkdir $DIR_ROOT/bin
 
 # Python
 echo "*** Installing Python ***"
 echo ""
 
-eval $(curl -sSf "sh.davidalsh.com/python.sh" | sh -s -- --version=3.12 --out-dir="$PWD/share/python")
+eval $(curl -sSf "sh.davidalsh.com/python.sh" | sh -s -- --version=3.12 --out-dir="$DIR_ROOT/share/python")
+mv "$DIR_ROOT/share/python/
 
 "$PWD/share/python/bin/python" -m pip install --upgrade pip
 "$PWD/share/python/bin/python" -m pip install --upgrade wheel
@@ -87,10 +90,12 @@ eval $(curl -sSf "sh.davidalsh.com/python.sh" | sh -s -- --version=3.12 --out-di
 #     python -m pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cpu
 # fi
 
-# # ComfyUI
-# if ! [ -d "ComfyUI" ]; then
-#     git clone "https://github.com/comfyanonymous/ComfyUI.git"
-# fi
+# ComfyUI
+echo "*** Installing ComfyUI ***"
+echo ""
+if ! [ -d "ComfyUI" ]; then
+  git clone "https://github.com/comfyanonymous/ComfyUI.git" "$PWD/share/comfyui"
+fi
 
 # cd ComfyUI
 #     python -m pip install -r "./requirements.txt"
