@@ -25,6 +25,9 @@ while [ $# -gt 0 ]; do
     --modify-path)
       MODIFY_PATH="true"
       ;;
+    --systemd)
+      SYSTEMD="true"
+      ;;
     *)
       >&2 printf "Error: Invalid argument\n"
       exit 1
