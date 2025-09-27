@@ -143,6 +143,7 @@ custom_nodes=(
   "https://github.com/rgthree/rgthree-comfy.git"
   "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
   "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git"
+  "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
 )
 
 for element in "${custom_nodes[@]}"; do
