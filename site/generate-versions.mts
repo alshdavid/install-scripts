@@ -24,6 +24,7 @@ export async function main() {
     uutils(),
     terraform(),
     python(),
+    vultrCli()
   ])
 
   // Add .txt for correct mime type
@@ -159,4 +160,14 @@ export async function python() {
     await fs.promises.writeFile(path.join(versions, project, version), asset.browser_download_url, 'utf8')
     console.log(`${project}: ${version}`)
   }
+}
+
+export async function vultrCli() {
+  const project = "vultr-cli"
+  const resp = await githubApi.getRelease('vultr/vultr-cli')
+  const version = resp.tag_name.replace("v", "")
+
+  await fs.promises.mkdir(path.join(versions, project))
+  await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
+  console.log(`${project}: ${version}`)
 }
