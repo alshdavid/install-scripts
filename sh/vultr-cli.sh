@@ -42,12 +42,12 @@ esac
 
 URL=""
 case "$OS-$ARCH" in
-  linux-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  linux-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  macos-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  macos-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  windows-amd64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
-  windows-arm64) URL="https://github.com/alshdavid/rrm/releases/download/${VERSION}/rrm-${OS}-${ARCH}.tar.gz";;
+  linux-amd64) URL="https://github.com/vultr/vultr-cli/releases/download/v${VERSION}/vultr-cli_v${VERSION}_linux_amd64.tar.gz";;
+  linux-arm64) URL="https://github.com/vultr/vultr-cli/releases/download/v${VERSION}/vultr-cli_v${VERSION}_linux_arm64.tar.gz";;
+  macos-amd64) URL="https://github.com/vultr/vultr-cli/releases/download/v${VERSION}/vultr-cli_v${VERSION}_macOs_amd64.tar.gz";;
+  macos-arm64) URL="https://github.com/vultr/vultr-cli/releases/download/v${VERSION}/vultr-cli_v${VERSION}_macOs_arm64.tar.gz";;
+  windows-amd64) URL="https://github.com/vultr/vultr-cli/releases/download/v${VERSION}/vultr-cli_v${VERSION}_windows_amd64.zip";;
+  windows-arm64) URL="https://github.com/vultr/vultr-cli/releases/download/v${VERSION}/vultr-cli_v${VERSION}_windows_arm64.zip";;
 esac
 
 if [ "$URL" = "" ]; then
