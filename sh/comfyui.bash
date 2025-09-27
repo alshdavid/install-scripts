@@ -238,7 +238,7 @@ else
   echo "SCRIPT_PATH=\`dirname \$0 | while read a; do cd \$a && pwd && break; done\`" >> $COMFYUI_BIN
   echo "LOCAL_PATH=\"\$(dirname \$SCRIPT_PATH)\"" >> $COMFYUI_BIN
   echo "export PATH=\"\$LOCAL_PATH/share/python/bin:\$PATH\"" >> $COMFYUI_BIN
-  echo "exec \$LOCAL_PATH/share/python/bin/python \$LOCAL_PATH/share/comfyui/main.py ${ARGS}" >> $COMFYUI_BIN
+  echo "exec \$LOCAL_PATH/share/python/bin/python \$LOCAL_PATH/share/comfyui/main.py --base-directory \$LOCAL_PATH ${ARGS}" >> $COMFYUI_BIN
 fi
 
 chmod +x $COMFYUI_BIN
