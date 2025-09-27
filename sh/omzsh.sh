@@ -43,9 +43,8 @@ echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> $HOME/.zshrc
 mkdir -p $HOME/.local/bin
 
 if ! [ -x "$(command -v chsh)" ]; then
-  env DEBIAN_FRONTEND=noninteractive $SUDO apt install -y chsh
+  chsh -s $(which zsh)
 fi
-chsh -s $(which zsh)
 
 echo "*** Done ***"
 echo "*** Restart Terminal for changes to take effect ***"
