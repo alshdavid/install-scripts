@@ -42,6 +42,9 @@ echo "$(echo 'export DISABLE_MAGIC_FUNCTIONS=true' | cat - $HOME/.zshrc)" > $HOM
 echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> $HOME/.zshrc
 mkdir -p $HOME/.local/bin
 
+if ! [ -x "$(command -v chsh)" ]; then
+  env DEBIAN_FRONTEND=noninteractive $SUDO apt install -y chsh
+fi
 chsh -s $(which zsh)
 
 echo "*** Done ***"
