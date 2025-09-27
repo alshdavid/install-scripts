@@ -3,6 +3,10 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
+.inline-block {
+  display: inline-block;
+}
+
 code {
   display: block;
   background-color: #eee;
@@ -30,11 +34,18 @@ article {
 %>
 <% if (ctx.fs.exists(ctx.path.join(ctx.root, 'sh', docName))) { %>
 <%- await include(ctx.path.join(ctx.root, 'sh', docName)) %>
-<% } else { %>
+<% } else if (file.endsWith('.sh')) { %>
   <article>
   <h3><%= file %></h3>
   <code>
   eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | sh)
+  </code>
+  </article>
+<% } else if (file.endsWith('.bash')) { %>
+  <article>
+  <h3><%= file %></h3>
+  <code>
+  eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | bash)
   </code>
   </article>
 <% } %>

@@ -19,4 +19,7 @@ export async function main() {
     if (file.endsWith('.md')) continue
     await fs.promises.cp(path.join(root, 'ps1', file), path.join(dist, file))
   }
+
+  await fs.promises.cp(path.join(root, 'assets'), path.join(dist, 'assets'), { recursive: true })
+
 }
