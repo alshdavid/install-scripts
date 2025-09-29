@@ -374,7 +374,7 @@ if [ "$CADDY" = "true" ]; then
     echo "Type=simple" >> $UNIT
     echo "User=root" >> $UNIT
     echo "" >> $UNIT
-    echo "ExecStart=${OUT_DIR}/share/caddy run --config ${OUT_DIR}/bin/Caddyfile" >> $UNIT
+    echo "ExecStart=${OUT_DIR}/bin/caddy run --config ${OUT_DIR}/share/Caddyfile" >> $UNIT
     echo "" >> $UNIT
     echo "Restart=on-failure" >> $UNIT
     echo "" >> $UNIT
