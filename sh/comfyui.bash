@@ -358,6 +358,8 @@ if [ "$CADDY" = "true" ]; then
 
     if ! [ "$CADDY_SSL_KEY" = "" ]; then
       curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.ssl-caddyfile"
+      CADDY_SSL_CERT=$(echo "$CADDY_SSL_CERT" | sed 's/\//\\\//g')
+      CADDY_SSL_KEY=$(echo "$CADDY_SSL_KEY" | sed 's/\//\\\//g')
       sed -i "s/path_to_cert/$CADDY_SSL_CERT/g" "${OUT_DIR}/share/Caddyfile"
       sed -i "s/path_to_key/$CADDY_SSL_KEY/g" "${OUT_DIR}/share/Caddyfile"
     else
@@ -403,6 +405,15 @@ if [ "$CADDY" = "true" ]; then
   else
     curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
     chmod +x "${OUT_DIR}/bin/caddy"
-    curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+
+    if ! [ "$CADDY_SSL_KEY" = "" ]; then
+      curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.ssl-caddyfile"
+      CADDY_SSL_CERT=$(echo "$CADDY_SSL_CERT" | sed 's/\//\\\//g')
+      CADDY_SSL_KEY=$(echo "$CADDY_SSL_KEY" | sed 's/\//\\\//g')
+      sed -i "s/path_to_cert/$CADDY_SSL_CERT/g" "${OUT_DIR}/share/Caddyfile"
+      sed -i "s/path_to_key/$CADDY_SSL_KEY/g" "${OUT_DIR}/share/Caddyfile"
+    else
+      curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+    fi
   fi
 fi
