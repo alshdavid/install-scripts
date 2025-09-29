@@ -32,7 +32,15 @@ while [ $# -gt 0 ]; do
     --caddy)
       CADDY="true"
       ;;
-    *)
+    --caddy-ssl-key)
+      if [[ "$1" != *=* ]]; then shift; fi # Value is next arg if no `=`
+      CADDY_SSL_KEY="${1#*=}"
+      ;;
+    --caddy-ssl-cert)
+      if [[ "$1" != *=* ]]; then shift; fi # Value is next arg if no `=`
+      CADDY_SSL_CERT="${1#*=}"
+      ;;
+      *)
       >&2 printf "Error: Invalid argument\n"
       exit 1
       ;;
@@ -345,7 +353,14 @@ if [ "$CADDY" = "true" ]; then
 
     curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
     chmod +x "${OUT_DIR}/bin/caddy"
-    curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+
+    if [ "$CADDY_SSL_KEY" ]; then
+      curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.ssl-caddyfile"
+      sed -i "s/path_to_cert/$CADDY_SSL_CERT/g" "${OUT_DIR}/bin/Caddyfile"
+      sed -i "s/path_to_key/$CADDY_SSL_KEY/g" "${OUT_DIR}/bin/Caddyfile"
+    else
+      curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+    fi
 
     echo "[Unit]" >> $UNIT
     echo "Description=ComfyUI Proxy" >> $UNIT
