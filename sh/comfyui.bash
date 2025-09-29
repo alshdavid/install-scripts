@@ -32,11 +32,11 @@ while [ $# -gt 0 ]; do
     --caddy)
       CADDY="true"
       ;;
-    --caddy-ssl-key)
+    --caddy-ssl-key*)
       if [[ "$1" != *=* ]]; then shift; fi # Value is next arg if no `=`
       CADDY_SSL_KEY="${1#*=}"
       ;;
-    --caddy-ssl-cert)
+    --caddy-ssl-cert*)
       if [[ "$1" != *=* ]]; then shift; fi # Value is next arg if no `=`
       CADDY_SSL_CERT="${1#*=}"
       ;;
