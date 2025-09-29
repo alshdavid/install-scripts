@@ -388,7 +388,7 @@ if [ "$CADDY" = "true" ]; then
     n=60
     i=1
     while [ $i -lt $((n+1)) ]; do
-      curl -s "https://localhost:8189" > /dev/null
+      curl --insecure -s "https://localhost:8189" > /dev/null
       if [ "$?" = "0" ]; then      
         echo >&2 "ComfyUI Proxy Up"
         break
