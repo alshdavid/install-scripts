@@ -324,10 +324,6 @@ if [ "$SYSTEMD" = "true" ]; then
 fi
 
 if [ "$CADDY" = "true" ]; then
-  curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
-  chmod +x "${OUT_DIR}/bin/caddy"
-  curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
-
   if [ "$SYSTEMD" = "true" ]; then 
     if ! [ -x "$(command -v systemd)" ]; then
       >&2 echo "systemd not available"
@@ -347,6 +343,10 @@ if [ "$CADDY" = "true" ]; then
       $SUDO systemctl daemon-reload  || true
     fi
 
+    curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
+    chmod +x "${OUT_DIR}/bin/caddy"
+    curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+
     echo "[Unit]" >> $UNIT
     echo "Description=ComfyUI Proxy" >> $UNIT
     echo "After=network.target" >> $UNIT
@@ -355,7 +355,7 @@ if [ "$CADDY" = "true" ]; then
     echo "Type=simple" >> $UNIT
     echo "User=root" >> $UNIT
     echo "" >> $UNIT
-    echo "ExecStart=${OUT_DIR}/bin/caddy run" >> $UNIT
+    echo "ExecStart=${OUT_DIR}/bin/caddy run --config ${OUT_DIR}/bin/Caddyfile" >> $UNIT
     echo "" >> $UNIT
     echo "Restart=on-failure" >> $UNIT
     echo "" >> $UNIT
@@ -383,5 +383,9 @@ if [ "$CADDY" = "true" ]; then
       sleep 1
       i=$((i+1))
     done
+  else
+    curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
+    chmod +x "${OUT_DIR}/bin/caddy"
+    curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
   fi
 fi
