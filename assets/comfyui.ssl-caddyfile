@@ -1,0 +1,13 @@
+https://localhost:8189 {
+    tls path_to_cert path_to_key
+    reverse_proxy localhost:8188
+
+    encode {
+        br {
+            level 9
+        }
+        gzip {
+            level 9
+        }
+    }
+}
