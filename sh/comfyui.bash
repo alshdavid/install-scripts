@@ -354,7 +354,7 @@ if [ "$CADDY" = "true" ]; then
       $SUDO systemctl daemon-reload  || true
     fi
 
-    curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
+    curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&p=github.com%2Fcaddyserver%2Fcache-handler&idempotency=16535818454230"
     chmod +x "${OUT_DIR}/bin/caddy"
 
     if ! [ "$CADDY_SSL_KEY" = "" ]; then
