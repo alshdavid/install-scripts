@@ -324,9 +324,9 @@ if [ "$SYSTEMD" = "true" ]; then
 fi
 
 if [ "$CADDY" = "true" ]; then
-  curl --progress-bar -L -o "${OUT_DIR}/bin/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
+  curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
   chmod +x "${OUT_DIR}/bin/bin/caddy"
-  curl --progress-bar -L -o "${OUT_DIR}/bin/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+  curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
 
   if [ "$SYSTEMD" = "true" ]; then 
     if ! [ -x "$(command -v systemd)" ]; then
