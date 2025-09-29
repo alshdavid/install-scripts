@@ -4,6 +4,7 @@ PRE="false"
 COMPUTE_PLATFORM=""
 SYSTEMD="false"
 MODIFY_PATH="false"
+CADDY="false"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -27,6 +28,9 @@ while [ $# -gt 0 ]; do
       ;;
     --systemd)
       SYSTEMD="true"
+      ;;
+    --caddy)
+      CADDY="true"
       ;;
     *)
       >&2 printf "Error: Invalid argument\n"
@@ -317,4 +321,49 @@ if [ "$SYSTEMD" = "true" ]; then
     sleep 1
     i=$((i+1))
   done
+fi
+
+if [ "$CADDY" = "true" ]; then
+  curl --progress-bar -L -o "${OUT_DIR}/bin/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
+  chmod +x "${OUT_DIR}/bin/bin/caddy"
+  curl --progress-bar -L -o "${OUT_DIR}/bin/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+
+  if [ "$SYSTEMD" = "true" ]; then 
+    if ! [ -x "$(command -v systemd)" ]; then
+      >&2 echo "systemd not available"
+      exit 1
+    fi
+
+    UNIT="$OUT_DIR/share/comfyui-proxy.service"
+    UNIT_SYS="/etc/systemd/system/comfyui-proxy.service"
+    
+    if [ -f "$UNIT" ]; then
+      rm -rf "$UNIT"
+    fi
+
+    if [ -f "$UNIT_SYS" ]; then
+      $SUDO systemctl stop comfyui-proxy  || true
+      $SUDO rm -rf "$UNIT_SYS"
+      $SUDO systemctl daemon-reload  || true
+    fi
+
+    echo "[Unit]" >> $UNIT
+    echo "Description=ComfyUI Proxy" >> $UNIT
+    echo "After=network.target" >> $UNIT
+    echo "" >> $UNIT
+    echo "[Service]" >> $UNIT
+    echo "Type=simple" >> $UNIT
+    echo "User=root" >> $UNIT
+    echo "" >> $UNIT
+    echo "ExecStart=${OUT_DIR}/bin/caddy" >> $UNIT
+    echo "" >> $UNIT
+    echo "Restart=on-failure" >> $UNIT
+    echo "" >> $UNIT
+    echo "[Install]" >> $UNIT
+    echo "WantedBy=multi-user.target" >> $UNIT
+
+    $SUDO cp $UNIT $UNIT_SYS
+    $SUDO systemctl daemon-reload  || true
+    $SUDO systemctl start comfyui  || true
+  fi
 fi
