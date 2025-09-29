@@ -145,12 +145,12 @@ fi
 
 # Custom Nodes
 custom_nodes=(
-  "https://github.com/ltdrdata/ComfyUI-Manager.git"
-  "https://github.com/WASasquatch/was-node-suite-comfyui.git"
-  "https://github.com/rgthree/rgthree-comfy.git"
-  "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
-  "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git"
-  "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
+  # "https://github.com/ltdrdata/ComfyUI-Manager.git"
+  # "https://github.com/WASasquatch/was-node-suite-comfyui.git"
+  # "https://github.com/rgthree/rgthree-comfy.git"
+  # "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+  # "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git"
+  # "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
 )
 
 for element in "${custom_nodes[@]}"; do
@@ -304,7 +304,7 @@ if [ "$SYSTEMD" = "true" ]; then
   # Health Check
   echo >&2 'Checking ComfyUI Status'
 
-  n=15
+  n=60
   i=1
   while [ $i -lt $((n+1)) ]; do
     curl -s "http://localhost:8188" > /dev/null
