@@ -1,10 +1,26 @@
 https://localhost:8189 {
-    reverse_proxy localhost:8188
+    @static {
+        path /static/* /assets/* /**/*.js /**/*.css /**/*.woff2
+    }
 
-    encode {
-        br {
-            level 9
+    handle @static {
+        reverse_proxy localhost:8188
+        cache {
+            ttl 1h
         }
+
+        encode {
+            br {
+                level 9
+            }
+            gzip {
+                level 9
+            }
+        }
+    }
+
+    reverse_proxy localhost:8188
+    encode {
         gzip {
             level 9
         }
