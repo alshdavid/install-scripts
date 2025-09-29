@@ -97,6 +97,8 @@ esac
 >&2 echo "USING PYTORCH PRE:  $PRE"
 >&2 echo "ADD SERVICE:        $SYSTEMD"
 >&2 echo "OS:                 $OS"
+>&2 echo "CADDY_SSL_KEY:      $CADDY_SSL_KEY"
+>&2 echo "CADDY_SSL_CERT:     $CADDY_SSL_CERT"
 
 >&2 echo ""
 
@@ -354,12 +356,12 @@ if [ "$CADDY" = "true" ]; then
     curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
     chmod +x "${OUT_DIR}/bin/caddy"
 
-    if [ "$CADDY_SSL_KEY" ]; then
-      curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.ssl-caddyfile"
-      sed -i "s/path_to_cert/$CADDY_SSL_CERT/g" "${OUT_DIR}/bin/Caddyfile"
-      sed -i "s/path_to_key/$CADDY_SSL_KEY/g" "${OUT_DIR}/bin/Caddyfile"
+    if ! [ "$CADDY_SSL_KEY" = "" ]; then
+      curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.ssl-caddyfile"
+      sed -i "s/path_to_cert/$CADDY_SSL_CERT/g" "${OUT_DIR}/share/Caddyfile"
+      sed -i "s/path_to_key/$CADDY_SSL_KEY/g" "${OUT_DIR}/share/Caddyfile"
     else
-      curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+      curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
     fi
 
     echo "[Unit]" >> $UNIT
@@ -370,7 +372,7 @@ if [ "$CADDY" = "true" ]; then
     echo "Type=simple" >> $UNIT
     echo "User=root" >> $UNIT
     echo "" >> $UNIT
-    echo "ExecStart=${OUT_DIR}/bin/caddy run --config ${OUT_DIR}/bin/Caddyfile" >> $UNIT
+    echo "ExecStart=${OUT_DIR}/share/caddy run --config ${OUT_DIR}/bin/Caddyfile" >> $UNIT
     echo "" >> $UNIT
     echo "Restart=on-failure" >> $UNIT
     echo "" >> $UNIT
@@ -401,6 +403,6 @@ if [ "$CADDY" = "true" ]; then
   else
     curl --progress-bar -L -o "${OUT_DIR}/bin/caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fueffel%2Fcaddy-brotli&idempotency=13785720277727"
     chmod +x "${OUT_DIR}/bin/caddy"
-    curl --progress-bar -L -o "${OUT_DIR}/bin/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
+    curl --progress-bar -L -o "${OUT_DIR}/share/Caddyfile" "https://sh.davidalsh.com/assets/comfyui.caddyfile"
   fi
 fi
