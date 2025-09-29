@@ -355,7 +355,7 @@ if [ "$CADDY" = "true" ]; then
     echo "Type=simple" >> $UNIT
     echo "User=root" >> $UNIT
     echo "" >> $UNIT
-    echo "ExecStart=${OUT_DIR}/bin/caddy" >> $UNIT
+    echo "ExecStart=${OUT_DIR}/bin/caddy run" >> $UNIT
     echo "" >> $UNIT
     echo "Restart=on-failure" >> $UNIT
     echo "" >> $UNIT
@@ -364,6 +364,24 @@ if [ "$CADDY" = "true" ]; then
 
     $SUDO cp $UNIT $UNIT_SYS
     $SUDO systemctl daemon-reload  || true
-    $SUDO systemctl start comfyui  || true
+    $SUDO systemctl start comfyui-proxy  || true
+
+    n=60
+    i=1
+    while [ $i -lt $((n+1)) ]; do
+      curl -s "http://localhost:8189" > /dev/null
+      if [ "$?" = "0" ]; then      
+        echo >&2 "ComfyUI Proxy Up"
+        break
+      fi
+
+      echo >&2 "[$i/$n] ComfyUI Proxy down, trying again in 1s..."
+      if [ "$i" = "$n" ]; then
+        echo >&2 "ComfyUI Proxy Failed to start in $n seconds"
+        break
+      fi
+      sleep 1
+      i=$((i+1))
+    done
   fi
 fi
