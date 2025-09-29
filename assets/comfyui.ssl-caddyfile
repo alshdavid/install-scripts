@@ -2,6 +2,26 @@ https://localhost:8189 {
     tls path_to_cert path_to_key
     reverse_proxy localhost:8188
 
+    @static {
+        path /static/* /assets/* /images/* *.js *.css *.woff2
+    }
+
+    route @static {
+        cache {
+            ttl 24h
+            max_size 1GB
+        }
+        encode {
+            br {
+                level 9
+            }
+            gzip {
+                level 9
+            }
+        }
+        reverse_proxy localhost:8188
+    }
+
     encode {
         br {
             level 9
