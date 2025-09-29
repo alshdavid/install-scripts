@@ -158,6 +158,7 @@ custom_nodes=(
   "https://github.com/ltdrdata/ComfyUI-Manager.git"
   "https://github.com/WASasquatch/was-node-suite-comfyui.git"
   "https://github.com/rgthree/rgthree-comfy.git"
+  "https://github.com/crystian/ComfyUI-Crystools.git"
   # "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
   # "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git"
   # "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
