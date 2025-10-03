@@ -3,6 +3,7 @@ import * as path from "node:path";
 import * as url from "node:url";
 import * as buildHtml from './build-html.mts'
 import * as generateVersions from './generate-versions.mts'
+import * as repackageVersions from './repackage-versions.mts'
 import * as copyFiles from './copy-files.mts'
 
 const filename = url.fileURLToPath(import.meta.url);
@@ -16,6 +17,7 @@ void async function main() {
   fs.mkdirSync(path.join(root, 'dist'))
 
   await generateVersions.main()
+  await repackageVersions.main()
   await buildHtml.main()
   await copyFiles.main()
 }()
