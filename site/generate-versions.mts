@@ -21,6 +21,7 @@ export async function main() {
     nodejs(),
     procmon(),
     rrm(),
+    flatDir(),
     uutils(),
     terraform(),
     python(),
@@ -92,6 +93,16 @@ export async function nodejs() {
   console.log(`${project} lts: ${lts}`)
 }
 
+export async function deno() {
+  const project = "deno"
+  const resp = await githubApi.getRelease('denoland/deno')
+  const version = resp.tag_name
+
+  await fs.promises.mkdir(path.join(versions, project))
+  await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
+  console.log(`${project}: ${version}`)
+}
+
 export async function procmon() {
   const project = "procmon"
   const resp = await githubApi.getRelease('alshdavid/procmon')
@@ -105,6 +116,16 @@ export async function procmon() {
 export async function rrm() {
   const project = "rrm"
   const resp = await githubApi.getRelease('alshdavid/rrm')
+  const version = resp.tag_name
+
+  await fs.promises.mkdir(path.join(versions, project))
+  await fs.promises.writeFile(path.join(versions, project, 'latest'), version, 'utf8')
+  console.log(`${project}: ${version}`)
+}
+
+export async function flatDir() {
+  const project = "flatdir"
+  const resp = await githubApi.getRelease('alshdavid/flatdir')
   const version = resp.tag_name
 
   await fs.promises.mkdir(path.join(versions, project))
