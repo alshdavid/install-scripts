@@ -20,6 +20,10 @@ export async function main() {
   }
   fs.mkdirSync(tmpRoot);
 
+  if (!fs.existsSync(mirror)) {
+    fs.mkdirSync(mirror, { recursive: true });
+  }
+
   await Promise.all([just()]);
 
   // Generate index
@@ -69,7 +73,7 @@ export async function just() {
     path.join(mirror, `${project}-latest-linux-amd64.tar.gz`),
     path.join(tmpRoot, `${project}-latest-linux-amd64`)
   );
-  
+
   await tarXz(
     path.join(tmpRoot, `${project}-latest-linux-amd64`),
     path.join(mirror, `${project}-latest-linux-amd64.tar.xz`)
