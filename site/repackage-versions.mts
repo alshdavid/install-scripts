@@ -141,6 +141,10 @@ async function recompress(
   const inputName = `${project}-${version}-${os_arch}`;
   const inputArchive = `${project}-${version}-${os_arch}.${format}`;
 
+  index[`${inputName}.tar.xz`] = `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
+  index[`${inputName}.tar.gz`] = `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`;
+  index[`${inputName}.zip`] = `https://sh.davidalsh.com/mirror/${inputName}.zip`;
+
   const archives = await Promise.all([
     checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.tar.xz`),
     checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.tar.gz`),
@@ -184,22 +188,16 @@ async function recompress(
       throw new Error(`ArchiveFormat not supported: ${format}`);
   }
 
-  index[`${inputName}.tar.xz`] =
-    `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
   await tarXz(
     path.join(tmpRoot, inputName),
     path.join(mirror, `${inputName}.tar.xz`)
   );
 
-  index[`${inputName}.tar.gz`] =
-    `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`;
   await tarGz(
     path.join(tmpRoot, inputName),
     path.join(mirror, `${inputName}.tar.gz`)
   );
 
-  index[`${inputName}.zip`] =
-    `https://sh.davidalsh.com/mirror/${inputName}.zip`;
   await zip(
     path.join(tmpRoot, inputName),
     path.join(mirror, `${inputName}.zip`)
