@@ -11,7 +11,7 @@ import {
   unzip,
   zip,
 } from "./utils/compression.mts";
-import type { ArchiveFormat, OsArch } from "./utils/types.mts";
+import type { ArchiveFormat, OsArch, Os, Arch } from "./utils/types.mts";
 
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -19,7 +19,18 @@ const root = path.dirname(dirname);
 const mirror = path.join(root, "dist", "mirror");
 const tmpRoot = path.join(root, "tmp");
 
+type EntryRecord = {
+  project: string,
+  version: string,
+  os: Os,
+  arch: Arch,
+  download_url_gz: string
+  download_url_xz: string
+  download_url_zip: string
+}
+
 const index: Record<string, string> = {};
+const index_entries: Array<EntryRecord> = [];
 
 export async function main() {
   if (fs.existsSync(tmpRoot)) {
@@ -145,6 +156,16 @@ async function recompress(
   const inputName = `${project}-${version}-${os_arch}`;
   const inputArchive = `${project}-${version}-${os_arch}.${format}`;
 
+  index_entries.push({
+    project,
+    version,
+    os: os_arch.split('-')[0] as any,
+    arch: os_arch.split('-')[1] as any,
+    download_url_gz: `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`,
+    download_url_xz: `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`,
+    download_url_zip: `https://sh.davidalsh.com/mirror/${inputName}.zip`,
+  })
+  
   index[`${inputName}.tar.xz`] =
     `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
   index[`${inputName}.tar.gz`] =
