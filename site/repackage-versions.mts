@@ -1,6 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as url from "node:url";
+import * as ejs from "ejs";
+import * as prettier from "prettier";
 import * as githubApi from "./utils/github.mts";
 import { wget } from "./utils/wget.mts";
 import {
@@ -20,17 +22,17 @@ const mirror = path.join(root, "dist", "mirror");
 const tmpRoot = path.join(root, "tmp");
 
 type EntryRecord = {
-  project: string,
-  version: string,
-  os: Os,
-  arch: Arch,
-  download_url_gz: string
-  download_url_xz: string
-  download_url_zip: string
-}
+  project: string;
+  version: string;
+  os: Os;
+  arch: Arch;
+  download_url_gz: string;
+  download_url_xz: string;
+  download_url_zip: string;
+};
 
 const index: Record<string, string> = {};
-const index_entries: Array<EntryRecord> = [];
+const index_entries_obj: Array<EntryRecord> = [];
 
 export async function main() {
   if (fs.existsSync(tmpRoot)) {
@@ -51,8 +53,7 @@ export async function main() {
     "utf8"
   );
 
-  let index_entries = Object.entries(index);
-  index_entries.sort((a, b) => {
+  index_entries_obj.sort((a, b) => {
     const nameA = a[0].toUpperCase();
     const nameB = b[0].toUpperCase();
 
@@ -65,18 +66,49 @@ export async function main() {
     return 0;
   });
 
-  let index_html = ``;
-  for (const [key, value] of index_entries) {
-    index_html += `
-      <div>
-
-      </div>
-    <a style="display:block" href="${value}">${key}</a>\n`;
+  let index_entries: Record<string, Array<EntryRecord>> = {};
+  for (const entry of index_entries_obj) {
+    if (!index_entries[entry.project]) index_entries[entry.project] = [];
+    index_entries[entry.project].push(entry);
   }
+
+  let template = await fs.promises.readFile(
+    path.join(dirname, "mirror.ejs"),
+    "utf8"
+  );
+
+  const ctx = {
+    get root() {
+      return root;
+    },
+    get filename() {
+      return filename;
+    },
+    get dirname() {
+      return dirname;
+    },
+    get path() {
+      return path;
+    },
+    get ctx() {
+      return ctx;
+    },
+    entries: index_entries
+  };
+
+  const result = await ejs.render(template, ctx, {
+    async: true,
+    cache: false,
+    filename: template,
+  });
+
+  const formatted = await prettier.format(result, {
+    parser: "html",
+  });
 
   await fs.promises.writeFile(
     path.join(mirror, "index.html"),
-    index_html,
+    formatted,
     "utf8"
   );
 }
@@ -156,16 +188,16 @@ async function recompress(
   const inputName = `${project}-${version}-${os_arch}`;
   const inputArchive = `${project}-${version}-${os_arch}.${format}`;
 
-  index_entries.push({
+  index_entries_obj.push({
     project,
     version,
-    os: os_arch.split('-')[0] as any,
-    arch: os_arch.split('-')[1] as any,
+    os: os_arch.split("-")[0] as any,
+    arch: os_arch.split("-")[1] as any,
     download_url_gz: `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`,
     download_url_xz: `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`,
     download_url_zip: `https://sh.davidalsh.com/mirror/${inputName}.zip`,
-  })
-  
+  });
+
   index[`${inputName}.tar.xz`] =
     `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
   index[`${inputName}.tar.gz`] =
