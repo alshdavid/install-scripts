@@ -2,9 +2,16 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as url from "node:url";
 import * as githubApi from "./utils/github.mts";
-import * as nodejsApi from "./utils/nodejs.mts";
 import { wget } from "./utils/wget.mts";
-import { tarGz, tarXz, untarGz, zip } from "./utils/compression.mts";
+import {
+  tarGz,
+  tarXz,
+  untarGz,
+  untarXz,
+  unzip,
+  zip,
+} from "./utils/compression.mts";
+import type { ArchiveFormat, OsArch } from "./utils/types.mts";
 
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -50,36 +57,86 @@ export async function just() {
   const resp = await githubApi.getRelease("casey/just");
   const version = resp.tag_name;
 
-  recompress(`https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`, 'tar.gz', project, 'linux-amd64', 'latest')
-  // const downloads = {
-  //   ['linux-amd64']:    `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`,
-  //   ['linux-arm64']:    `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz`,
-  //   ['macos-amd64']:    `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-apple-darwin.tar.gz`,
-  //   ['macos-arm64']:    `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-apple-darwin.tar.gz`,
-  //   ['windows-amd64']:  `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-pc-windows-msvc.zip`,
-  //   ['windows-arm64']:  `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`,
-  // }
+  const downloads: Array<[OsArch, ArchiveFormat, string]> = [
+    [
+      "linux-amd64",
+      "tar.gz",
+      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`,
+    ],
+    [
+      "linux-arm64",
+      "tar.gz",
+      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz`,
+    ],
+    [
+      "macos-amd64",
+      "tar.gz",
+      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-apple-darwin.tar.gz`,
+    ],
+    [
+      "macos-arm64",
+      "tar.gz",
+      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-apple-darwin.tar.gz`,
+    ],
+    [
+      "windows-amd64",
+      "zip",
+      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-pc-windows-msvc.zip`,
+    ],
+    [
+      "windows-arm64",
+      "zip",
+      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`,
+    ],
+  ];
 
- 
+  for (const [os_arch, format, url] of downloads) {
+    await recompress(url, format, project, os_arch, "latest");
+  }
+
   console.log(`${project}: ${version}`);
 }
 
 async function recompress(
   url: string,
-  format: "tar.gz" | "tar.xz" | "zip" | "bin",
+  format: ArchiveFormat,
   project: string,
-  os_arch: 'linux-amd64' | 'linux-arm64' | 'macos-amd64' | 'macos-arm64' | 'macos-amd64' | 'windows-amd64' | 'windows-arm64',
+  os_arch: OsArch,
   version: string
 ): Promise<void> {
-  const inputName = `${project}-${version}-${os_arch}`
-  const inputArchive = `${project}-${version}-${os_arch}.${format}`
+  const inputName = `${project}-${version}-${os_arch}`;
+  const inputArchive = `${project}-${version}-${os_arch}.${format}`;
   await wget(url, path.join(mirror, inputArchive));
 
-  if (format === 'tar.gz') {
-    await untarGz(
-      path.join(mirror, inputArchive),
-      path.join(tmpRoot, inputName)
-    );
+  switch (format) {
+    case "tar.gz":
+      await untarGz(
+        path.join(mirror, inputArchive),
+        path.join(tmpRoot, inputName)
+      );
+      break;
+    case "tar.xz":
+      await untarXz(
+        path.join(mirror, inputArchive),
+        path.join(tmpRoot, inputName)
+      );
+      break;
+    case "zip":
+      await unzip(
+        path.join(mirror, inputArchive),
+        path.join(tmpRoot, inputName)
+      );
+    case "bin":
+      await fs.promises.mkdir(path.join(tmpRoot, inputName), {
+        recursive: true,
+      });
+      await fs.promises.cp(
+        path.join(mirror, inputArchive),
+        path.join(tmpRoot, inputName, inputName)
+      );
+      break;
+    default:
+      throw new Error(`ArchiveFormat not supported: ${format}`);
   }
 
   index[`${inputName}.tar.xz`] = `${inputName}.tar.xz`;
