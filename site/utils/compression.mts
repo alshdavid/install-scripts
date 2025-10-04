@@ -1,6 +1,4 @@
 import * as fs from "node:fs";
-import * as child_process from "node:child_process";
-import * as zlib from "node:zlib";
 import { sh } from "./sh.mts";
 
 export async function tarGz(folder: string, dest: string): Promise<void> {
@@ -16,7 +14,6 @@ export async function untarGz(archive: string, dest: string): Promise<void> {
   }
   fs.mkdirSync(dest);
   await sh("tar", ["-xzf", archive, "-C", dest], {
-    shell: true,
     stdio: "inherit",
   });
 }
@@ -34,7 +31,6 @@ export async function untarXz(archive: string, dest: string): Promise<void> {
   }
   fs.mkdirSync(dest);
   await sh("tar", ["-xzf", archive, "-C", dest], {
-    shell: true,
     stdio: "inherit",
   });
 }
