@@ -1,12 +1,12 @@
 import * as fs from 'node:fs'
-import * as child_process from "node:child_process";
+import { sh } from './sh.mts'
 
-export function wget(url: string, dest: string) {
+export async function wget(url: string, dest: string): Promise<void> {
   if (fs.existsSync(dest)) {
     return
   }
 
-  const child = child_process.spawn(
+  await sh(
     "wget",
     [
       "--progress=bar:force:noscroll",
@@ -14,24 +14,6 @@ export function wget(url: string, dest: string) {
       "-O",
       dest,
       `"${url}"`,
-    ],
-    {
-      shell: true,
-      stdio: "inherit",
-    }
+    ]
   );
-
-  return new Promise((resolve, reject) => {
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolve({ code });
-      } else {
-        reject(new Error(`Command failed with exit code ${code}`));
-      }
-    });
-
-    child.on("error", (err) => {
-      reject(err);
-    });
-  });
 }

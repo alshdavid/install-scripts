@@ -4,7 +4,7 @@ import * as url from "node:url";
 import * as githubApi from "./utils/github.mts";
 import * as nodejsApi from "./utils/nodejs.mts";
 import { wget } from "./utils/wget.mts";
-import { tarXz, untarGz } from "./utils/compression.mts";
+import { tarGz, tarXz, untarGz, zip } from "./utils/compression.mts";
 
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -79,7 +79,47 @@ export async function just() {
     path.join(mirror, `${project}-latest-linux-amd64.tar.xz`)
   );
 
-  await fs.promises.rm(path.join(tmpRoot, `${project}-latest-linux-amd64`), { recursive: true , force: true })
+  await fs.promises.rm(path.join(tmpRoot, `${project}-latest-linux-amd64`), {
+    recursive: true,
+    force: true,
+  });
 
   console.log(`${project}: ${version}`);
+}
+
+async function recompress(
+  url: string,
+  format: "tar.gz" | "tar.xz" | "zip" | "bin",
+  project: string,
+  os_arch: string,
+  version: string
+): Promise<void> {
+  const inputName = `${project}-${version}-${os_arch}`
+  const inputArchive = `${project}-${version}-${os_arch}.${format}`
+  await wget(url, path.join(mirror, inputArchive));
+
+  if (format === 'tar.gz') {
+    await untarGz(
+      path.join(mirror, inputArchive),
+      path.join(tmpRoot, inputName)
+    );
+  }
+
+  index[`${inputName}.tar.xz`] = `${inputName}.tar.xz`;
+  await tarXz(
+    path.join(tmpRoot, inputName),
+    path.join(mirror, `${inputName}.tar.xz`)
+  );
+
+  index[`${inputName}.tar.gz`] = `${inputName}.tar.gz`;
+  await tarGz(
+    path.join(tmpRoot, inputName),
+    path.join(mirror, `${inputName}.tar.gz`)
+  );
+
+  index[`${inputName}.zip`] = `${inputName}.zip`;
+  await zip(
+    path.join(tmpRoot, inputName),
+    path.join(mirror, `${inputName}.zip`)
+  );
 }
