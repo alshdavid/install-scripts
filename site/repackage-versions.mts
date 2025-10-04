@@ -57,38 +57,36 @@ export async function just() {
   const resp = await githubApi.getRelease("casey/just");
   const version = resp.tag_name;
 
+  // prettier-ignore
   const downloads: Array<[OsArch, ArchiveFormat, string]> = [
-    [
-      "linux-amd64",
-      "tar.gz",
-      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`,
-    ],
-    [
-      "linux-arm64",
-      "tar.gz",
-      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz`,
-    ],
-    [
-      "macos-amd64",
-      "tar.gz",
-      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-apple-darwin.tar.gz`,
-    ],
-    [
-      "macos-arm64",
-      "tar.gz",
-      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-apple-darwin.tar.gz`,
-    ],
-    [
-      "windows-amd64",
-      "zip",
-      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-pc-windows-msvc.zip`,
-    ],
-    [
-      "windows-arm64",
-      "zip",
-      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`,
-    ],
-  ];
+    ['linux-amd64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`],
+    ['linux-arm64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz`],
+    ['macos-amd64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-apple-darwin.tar.gz`],
+    ['macos-arm64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-apple-darwin.tar.gz`],
+    ['windows-amd64', 'zip',      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-pc-windows-msvc.zip`],
+    ['windows-arm64', 'zip',      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`],
+  ]
+
+  for (const [os_arch, format, url] of downloads) {
+    await recompress(url, format, project, os_arch, "latest");
+  }
+
+  console.log(`${project}: ${version}`);
+}
+
+export async function deno() {
+  const project = "deno";
+  const resp = await githubApi.getRelease("denoland/deno");
+  const version = resp.tag_name;
+
+  // prettier-ignore
+  const downloads: Array<[OsArch, ArchiveFormat, string]> = [
+    ['linux-amd64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-x86_64-unknown-linux-gnu.zip`],
+    ['linux-arm64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-aarch64-unknown-linux-gnu.zip`],
+    ['macos-amd64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-aarch64-apple-darwin.zip`],
+    ['macos-arm64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-x86_64-apple-darwin.zip`],
+    ['windows-amd64', 'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-x86_64-pc-windows-msvc.zip`],
+  ]
 
   for (const [os_arch, format, url] of downloads) {
     await recompress(url, format, project, os_arch, "latest");
