@@ -13,7 +13,7 @@ export async function wget(url: string, dest: string): Promise<void> {
       "--trust-server-names",
       "-O",
       dest,
-      `"${url}"`,
+      url,
     ]
   );
 }
