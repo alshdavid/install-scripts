@@ -56,7 +56,11 @@ export async function main() {
 
   let index_html = ``;
   for (const [key, value] of index_entries) {
-    index_html += `<a style="display:block" href="${value}">${key}</a>\n`;
+    index_html += `
+      <div>
+
+      </div>
+    <a style="display:block" href="${value}">${key}</a>\n`;
   }
 
   await fs.promises.writeFile(
@@ -141,9 +145,12 @@ async function recompress(
   const inputName = `${project}-${version}-${os_arch}`;
   const inputArchive = `${project}-${version}-${os_arch}.${format}`;
 
-  index[`${inputName}.tar.xz`] = `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
-  index[`${inputName}.tar.gz`] = `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`;
-  index[`${inputName}.zip`] = `https://sh.davidalsh.com/mirror/${inputName}.zip`;
+  index[`${inputName}.tar.xz`] =
+    `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
+  index[`${inputName}.tar.gz`] =
+    `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`;
+  index[`${inputName}.zip`] =
+    `https://sh.davidalsh.com/mirror/${inputName}.zip`;
 
   const archives = await Promise.all([
     checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.tar.xz`),
@@ -151,8 +158,22 @@ async function recompress(
     checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.zip`),
   ]);
 
+  // Reuse if already exists
   if (!archives.includes(false)) {
-    return
+    await wget(
+      `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`,
+      path.join(mirror, `${inputName}.tar.xz`)
+    );
+    await wget(
+      `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`,
+      path.join(mirror, `${inputName}.tar.gz`)
+    );
+    await wget(
+      `https://sh.davidalsh.com/mirror/${inputName}.zip`,
+      path.join(mirror, `${inputName}.zip`)
+    );
+
+    return;
   }
 
   await wget(url, path.join(mirror, inputArchive));
@@ -206,7 +227,7 @@ async function recompress(
 
 async function checkUrlExists(url: string) {
   try {
-    const response = await globalThis.fetch(url, { method: 'HEAD' });
+    const response = await globalThis.fetch(url, { method: "HEAD" });
     if (response.ok) {
       return true;
     } else {
