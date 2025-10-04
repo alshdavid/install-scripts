@@ -49,6 +49,8 @@ export async function just() {
   const project = "just";
   const resp = await githubApi.getRelease("casey/just");
   const version = resp.tag_name;
+
+  recompress(`https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`, 'tar.gz', project, 'linux-amd64', 'latest')
   // const downloads = {
   //   ['linux-amd64']:    `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`,
   //   ['linux-arm64']:    `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz`,
@@ -58,32 +60,7 @@ export async function just() {
   //   ['windows-arm64']:  `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`,
   // }
 
-  index[`${project}-latest-linux-amd64.tar.gz`] =
-    `${project}-latest-linux-amd64.tar.gz`;
-
-  index[`${project}-latest-linux-amd64.tar.xz`] =
-    `${project}-latest-linux-amd64.tar.xz`;
-
-  await wget(
-    `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`,
-    path.join(mirror, `${project}-latest-linux-amd64.tar.gz`)
-  );
-
-  await untarGz(
-    path.join(mirror, `${project}-latest-linux-amd64.tar.gz`),
-    path.join(tmpRoot, `${project}-latest-linux-amd64`)
-  );
-
-  await tarXz(
-    path.join(tmpRoot, `${project}-latest-linux-amd64`),
-    path.join(mirror, `${project}-latest-linux-amd64.tar.xz`)
-  );
-
-  await fs.promises.rm(path.join(tmpRoot, `${project}-latest-linux-amd64`), {
-    recursive: true,
-    force: true,
-  });
-
+ 
   console.log(`${project}: ${version}`);
 }
 
@@ -91,7 +68,7 @@ async function recompress(
   url: string,
   format: "tar.gz" | "tar.xz" | "zip" | "bin",
   project: string,
-  os_arch: string,
+  os_arch: 'linux-amd64' | 'linux-arm64' | 'macos-amd64' | 'macos-arm64' | 'macos-amd64' | 'windows-amd64' | 'windows-arm64',
   version: string
 ): Promise<void> {
   const inputName = `${project}-${version}-${os_arch}`
