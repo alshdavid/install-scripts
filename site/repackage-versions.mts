@@ -31,7 +31,10 @@ export async function main() {
     fs.mkdirSync(mirror, { recursive: true });
   }
 
-  await Promise.all([just()]);
+  await Promise.all([
+    deno(),
+    just()
+  ]);
 
   // Generate index
   await fs.promises.writeFile(
@@ -137,19 +140,19 @@ async function recompress(
       throw new Error(`ArchiveFormat not supported: ${format}`);
   }
 
-  index[`${inputName}.tar.xz`] = `${inputName}.tar.xz`;
+  index[`${inputName}.tar.xz`] = `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
   await tarXz(
     path.join(tmpRoot, inputName),
     path.join(mirror, `${inputName}.tar.xz`)
   );
 
-  index[`${inputName}.tar.gz`] = `${inputName}.tar.gz`;
+  index[`${inputName}.tar.gz`] = `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`;
   await tarGz(
     path.join(tmpRoot, inputName),
     path.join(mirror, `${inputName}.tar.gz`)
   );
 
-  index[`${inputName}.zip`] = `${inputName}.zip`;
+  index[`${inputName}.zip`] = `https://sh.davidalsh.com/mirror/${inputName}.zip`;
   await zip(
     path.join(tmpRoot, inputName),
     path.join(mirror, `${inputName}.zip`)
