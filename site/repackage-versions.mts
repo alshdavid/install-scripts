@@ -100,7 +100,7 @@ export async function terraform() {
     ['macos-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip`],
     ['macos-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip`],
     ['windows-amd64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_amd64.zip`],
-    ['windows-arm64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_arm64.zip`],
+    // ['windows-arm64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_arm64.zip`],
   ]
 
   for (const [os_arch, format, url] of downloads) {
