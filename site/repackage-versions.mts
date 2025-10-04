@@ -95,12 +95,12 @@ export async function terraform() {
 
   // prettier-ignore
   const downloads: Array<[OsArch, ArchiveFormat, string]> = [
-    ['linux-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip"`],
-    ['linux-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_arm64.zip"`],
-    ['macos-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip"`],
-    ['macos-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip"`],
-    ['windows-amd64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_amd64.zip"`],
-    ['windows-arm64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_arm64.zip"`],
+    ['linux-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip`],
+    ['linux-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_arm64.zip`],
+    ['macos-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip`],
+    ['macos-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip`],
+    ['windows-amd64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_amd64.zip`],
+    ['windows-arm64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_arm64.zip`],
   ]
 
   for (const [os_arch, format, url] of downloads) {
