@@ -8,6 +8,7 @@ export function sh(
   const child = child_process.spawn(command, args, {
     shell: false,
     stdio: ["ignore", "inherit", "inherit"],
+    env: process.env,
     ...options,
   });
 
