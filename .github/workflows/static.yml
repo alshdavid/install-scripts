@@ -29,10 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      # - uses: actions/setup-node@v5
-      #   with:
-      #     node-version: 'latest'
-      - run: eval $(curl -sSf "sh.davidalsh.com/nodejs.sh" | sh -s)
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 'latest'
+      # - run: eval $(curl -sSf "sh.davidalsh.com/nodejs.sh" | sh -s)
       - run: npm install
       - run: node ./site/main.mts
         env:
