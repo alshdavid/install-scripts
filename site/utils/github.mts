@@ -9,7 +9,7 @@ export type GithubReleaseResponse = {
 
 export async function getRelease(
   repo: string,
-  tag?: string,
+  tag?: string
 ): Promise<GithubReleaseResponse> {
   let endpoint = "latest";
   if (tag) {
@@ -20,7 +20,7 @@ export async function getRelease(
   if (process.env.GITHUB_TOKEN) {
     init = {
       headers: {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`,
+        Authorization: process.env.GITHUB_TOKEN,
       },
     };
   }
@@ -43,14 +43,14 @@ export type GithubReleasesResponse = Array<{
 }>;
 
 export async function getReleases(
-  repo: string,
+  repo: string
 ): Promise<GithubReleasesResponse> {
   const url = `https://api.github.com/repos/${repo}/releases`;
   let init: RequestInit | undefined = undefined;
   if (process.env.GITHUB_TOKEN) {
     init = {
       headers: {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`,
+        Authorization: process.env.GITHUB_TOKEN,
       },
     };
   }
