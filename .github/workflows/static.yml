@@ -60,10 +60,6 @@ jobs:
         - run: which node
         - run: node --version 
         
-        - run: eval $(curl -sSf "sh.davidalsh.com/procmon.sh" | sh)
-        - run: which procmon
-        - run: procmon --help
-
         - run: eval $(curl -sSf "sh.davidalsh.com/rrm.sh" | sh)
         - run: which rrm
         - run: rrm --help

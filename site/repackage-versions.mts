@@ -67,7 +67,6 @@ export async function main() {
 
     // alshdavid projects
     http_server_rs(downloadManifest),
-    procmon(downloadManifest),
     rrm(downloadManifest),
     flatDir(downloadManifest),
   ]);
