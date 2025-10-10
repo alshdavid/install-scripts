@@ -160,6 +160,7 @@ export async function main() {
       console.log(`[${releaseName}] Done`);
     } catch (error) {
       console.log(`[${releaseName}] Failed`);
+      console.log({error});
 
       await githubReleaseDelete({
         repo: REPO,
