@@ -255,43 +255,58 @@ async function nodejs(manifest: DownloadManifest): Promise<void> {
 
   const allVersions: Record<string, Array<string>> = {};
 
-  // Get the latest release of the last 7 major releases
-  for (const release of resp) {
-    const version = release.version.replace("v", "");
-    const [major, minor] = version.split(".");
-    const key = `${major}`;
-    allVersions[key] = allVersions[key] || [];
-    if (allVersions[key].length >= 1) {
-      continue;
-    }
-    allVersions[key].push(version);
-  }
+  // Get all versions of Nodejs
+  // for (const release of resp) {
+  //   const version = release.version.replace("v", "");
+  //   // prettier-ignore
+  //   console.log(version)
+  //   manifest[`${project}-${version}`] = [
+  //     { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
+  //     { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
+  //     { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
+  //     { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
+  //     { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
+  //     { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
+  //   ]
+  // }
 
-  const allVersionsEntries = Object.entries(allVersions);
-  allVersionsEntries.sort((a, b) => sortEntries(`${a[0]}.0.0`, `${b[0]}.0.0`));
-  const versions = [
-    allVersionsEntries.pop(),
-    allVersionsEntries.pop(),
-    allVersionsEntries.pop(),
-    allVersionsEntries.pop(),
-    allVersionsEntries.pop(),
-    allVersionsEntries.pop(),
-    allVersionsEntries.pop(),
-  ];
+  // // Get the latest release of the last 7 major releases
+  // for (const release of resp) {
+  //   const version = release.version.replace("v", "");
+  //   const [major, minor] = version.split(".");
+  //   const key = `${major}`;
+  //   allVersions[key] = allVersions[key] || [];
+  //   if (allVersions[key].length >= 1) {
+  //     continue;
+  //   }
+  //   allVersions[key].push(version);
+  // }
 
-  for (const [_, minorVersions] of versions) {
-    for (const version of minorVersions) {
-      // prettier-ignore
-      manifest[`${project}-${version}`] = [
-        { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
-        { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
-        { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
-        { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
-        { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
-        { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
-      ]
-    }
-  }
+  // const allVersionsEntries = Object.entries(allVersions);
+  // allVersionsEntries.sort((a, b) => sortEntries(`${a[0]}.0.0`, `${b[0]}.0.0`));
+  // const versions = [
+  //   allVersionsEntries.pop(),
+  //   allVersionsEntries.pop(),
+  //   allVersionsEntries.pop(),
+  //   allVersionsEntries.pop(),
+  //   allVersionsEntries.pop(),
+  //   allVersionsEntries.pop(),
+  //   allVersionsEntries.pop(),
+  // ];
+
+  // for (const [_, minorVersions] of versions) {
+  //   for (const version of minorVersions) {
+  //     // prettier-ignore
+  //     manifest[`${project}-${version}`] = [
+  //       { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
+  //       { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
+  //       { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
+  //       { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
+  //       { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
+  //       { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
+  //     ]
+  //   }
+  // }
 }
 
 async function http_server_rs(manifest: DownloadManifest): Promise<void> {
@@ -301,12 +316,12 @@ async function http_server_rs(manifest: DownloadManifest): Promise<void> {
 
   // prettier-ignore
   manifest[`${project}-${version}`] = [
-    { project, version, os: 'linux',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/http-server-linux-amd64.tar.gz`   },
-    { project, version, os: 'linux',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/http-server-linux-arm64.tar.gz`   },
-    { project, version, os: 'macos',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/http-server-macos-amd64.tar.gz`   },
-    { project, version, os: 'macos',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/http-server-macos-arm64.tar.gz`   },
-    { project, version, os: 'windows',  arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/http-server-windows-amd64.tar.gz` },
-    { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/http-server-windows-arm64.tar.gz` },
+    { project, version, os: 'linux',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-amd64.tar.gz`   },
+    { project, version, os: 'linux',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-arm64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-amd64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-arm64.tar.gz`   },
+    { project, version, os: 'windows',  arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-amd64.tar.gz` },
+    { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-arm64.tar.gz` },
   ]
 }
 

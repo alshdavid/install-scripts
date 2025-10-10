@@ -64,6 +64,10 @@ jobs:
         - run: which rrm
         - run: rrm --help
 
+        - run: eval $(curl -sSf "sh.davidalsh.com/http-server-rs.sh" | sh)
+        - run: which http-server-rs
+        - run: http-server-rs --help
+
         - run: eval $(curl -sSf "sh.davidalsh.com/rust.sh" | sh)
         - run: which cargo
         - run: cargo --version
