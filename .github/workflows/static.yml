@@ -32,6 +32,8 @@ jobs:
       - run: eval $(cat ./sh/nodejs.sh | sh -s -- --version=24.9.0) 
       - run: npm install
       - run: node ./site/main.mts
+        env:
+          GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-pages-artifact@v3
         with: { path: 'dist' }
       - name: Deploy to GitHub Pages
