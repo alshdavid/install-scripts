@@ -258,6 +258,21 @@ async function nodejs(manifest: DownloadManifest): Promise<void> {
   // Get all versions of Nodejs
   for (const release of resp) {
     const version = release.version.replace("v", "");
+    if (version.startsWith('0')) continue
+    if (version.startsWith('1')) continue
+    if (version.startsWith('2')) continue
+    if (version.startsWith('3')) continue
+    if (version.startsWith('4')) continue
+    if (version.startsWith('5')) continue
+    if (version.startsWith('6')) continue
+    if (version.startsWith('7')) continue
+    if (version.startsWith('7')) continue
+    if (version.startsWith('9')) continue
+    if (version.startsWith('10')) continue
+    if (version.startsWith('11')) continue
+    if (version.startsWith('12')) continue
+    if (version.startsWith('13')) continue
+    
     // prettier-ignore
     console.log(version)
     manifest[`${project}-${version}`] = [
