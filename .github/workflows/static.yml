@@ -34,6 +34,7 @@ jobs:
       - run: node ./site/main.mts
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/upload-pages-artifact@v3
         with: { path: 'dist' }
       - name: Deploy to GitHub Pages
