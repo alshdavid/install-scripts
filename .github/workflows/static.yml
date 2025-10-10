@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - run: eval $(cat ./sh/nodejs.sh | sh -s -- --version=24.9.0) 
+      # - run: eval $(cat ./sh/nodejs.sh | sh -s -- --version=24.9.0)
       - run: npm install
       - run: node ./site/main.mts
         env:
