@@ -140,7 +140,7 @@ export async function main() {
     for (const version of Object.values(versions)) {
       const sv = tryParseSemver(version.version);
       if (!sv) {
-        break;
+        continue;
       }
       await fs.promises.mkdir(path.join(dir_versions, version.package), {
         recursive: true,
@@ -185,7 +185,7 @@ export async function main() {
     for (const version of Object.values(versions)) {
       const sv = tryParseSemver(version.version);
       if (!sv) {
-        break;
+        continue;
       }
       if (
         !fs.existsSync(
@@ -214,7 +214,7 @@ export async function main() {
   for (const versions of Object.values(sorted)) {
     for (const version of Object.values(versions)) {
       if (tryParseSemver(version.version)) {
-        break;
+        continue;
       }
       await fs.promises.mkdir(path.join(dir_versions, version.package), {
         recursive: true,
