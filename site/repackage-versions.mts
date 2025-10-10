@@ -27,6 +27,7 @@ import {
   inferArchiveFormat,
   sortEntries,
 } from "./repackage-versions/infer-format.mts";
+import { renderEjs } from "./utils/render-ejs.mts";
 
 const REPO = "alshdavid/install-scripts";
 
@@ -74,7 +75,25 @@ export async function main() {
   const downloadManifestEntries = Object.entries(downloadManifest);
   downloadManifestEntries.sort((a, b) => sortEntries(a[0], b[0]));
 
+  const doneShellScripts = new Set<string>();
+
   for (const [releaseName, downloads] of downloadManifestEntries) {
+    const packageName = downloads[0].project;
+    const packageVersion = downloads[0].version;
+
+    if (!doneShellScripts.has(packageName)) {
+      doneShellScripts.add(packageName);
+      await renderEjs({
+        inputFile: path.join(dirname, "templates", "install.sh"),
+        outputFile: path.join(root, "dist", `${packageName}.sh`),
+        packageName,
+        PACKAGE_NAME: packageName.toUpperCase(),
+        package_name: packageName.replaceAll('-', '_'),
+      });
+    }
+
+    continue
+
     if (await releaseExists(REPO, releaseName)) {
       console.log(`[${releaseName}] Release Exists Skipping`);
       continue;
@@ -89,8 +108,8 @@ export async function main() {
         tag: releaseName,
         draft: true,
         notes: JSON.stringify({
-          package: downloads[0].project,
-          version: downloads[0].version,
+          package: packageName,
+          version: packageVersion,
         }),
       });
 
@@ -160,7 +179,7 @@ export async function main() {
       console.log(`[${releaseName}] Done`);
     } catch (error) {
       console.log(`[${releaseName}] Failed`);
-      console.log({error});
+      console.log({ error });
 
       await githubReleaseDelete({
         repo: REPO,

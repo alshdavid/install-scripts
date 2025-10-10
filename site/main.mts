@@ -18,6 +18,6 @@ void (async function main() {
 
   await repackageVersions.main();
   await generatePackageIndex.main();
-  await buildHtml.main();
   await copyFiles.main();
+  await buildHtml.main();
 })();

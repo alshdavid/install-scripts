@@ -28,17 +28,17 @@ article {
 <h2>🐥🍎 Unix</h2>
 
 <% 
-  for (const file of await ctx.fs.readdir(ctx.path.join(ctx.root, 'sh'))) { 
+  for (const file of await ctx.fs.readdir(ctx.path.join(ctx.root, 'dist'))) { 
     if (file.endsWith('.md')) continue
     const docName = ctx.path.parse(file).name + '.md'
 %>
-<% if (ctx.fs.exists(ctx.path.join(ctx.root, 'sh', docName))) { %>
-<%- await include(ctx.path.join(ctx.root, 'sh', docName)) %>
+<% if (ctx.fs.exists(ctx.path.join(ctx.root, docName, 'dist'))) { %>
+<%- await include(ctx.path.join(ctx.root, docName, 'dist')) %>
 <% } else if (file.endsWith('.sh')) { %>
   <article>
   <h3><%= file %></h3>
   <code>
-  eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | sh)
+  eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | sh -s -- --version latest --out-dir ./)
   </code>
   </article>
 <% } else if (file.endsWith('.bash')) { %>
@@ -55,13 +55,13 @@ article {
 <h2>🟦 Windows</h2>
 
 <% 
-  for (const file of await ctx.fs.readdir(ctx.path.join(ctx.root, 'ps1'))) { 
+  for (const file of await ctx.fs.readdir(ctx.path.join(ctx.root, 'dist'))) { 
     if (file.endsWith('.md')) continue
     const docName = ctx.path.parse(file).name + '.md'
 %>
-<% if (ctx.fs.exists(ctx.path.join(ctx.root, 'ps1', docName))) { %>
-<%- await include(ctx.path.join(ctx.root, 'ps1', docName)) %>
-<% } else { %>
+<% if (ctx.fs.exists(ctx.path.join(ctx.root, 'dist', docName))) { %>
+<%- await include(ctx.path.join(ctx.root, 'dist', docName)) %>
+<% } else if (file.endsWith('.ps1')) { %>
   <article>
   <h3><%= file %></h3>
   <code>
