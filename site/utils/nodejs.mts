@@ -14,7 +14,7 @@ export type NodejsReleasesResponse = Array<{
 
 export async function getReleases(): Promise<NodejsReleasesResponse> {
   const resp = await globalThis.fetch(
-    "https://nodejs.org/download/release/index.json"
+    "https://nodejs.org/download/release/index.json",
   );
   if (!resp.ok) {
     throw new Error(`Unable to fetch release for Nodejs`);

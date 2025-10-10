@@ -1,294 +1,389 @@
+/*
+  The objective of this script is to generate normalized distributable
+  archives of known packages (node, python, etc) and upload them 
+  as Github Releases to act as mirrors for the originals.
+  
+  This is done by;
+  - Looking up the latest versions of a project
+  - Temporarily downloading & recompress a project to tar.gz, tar.xz and zip
+  - Uploading it to a Github Release with the tag being the "$PROJECT_NAME-$PROJECT_VERSION"
+
+*/
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as url from "node:url";
-import * as ejs from "ejs";
-import * as prettier from "prettier";
 import * as githubApi from "./utils/github.mts";
-import { wget } from "./utils/wget.mts";
+import type { Arch, ArchiveFormat, Os } from "./utils/types.mts";
+import { releaseExists } from "./repackage-versions/release-exists.mts";
+import * as nodejsApi from "./utils/nodejs.mts";
+import { recompress } from "./repackage-versions/recompress.mts";
 import {
-  tarGz,
-  tarXz,
-  untarGz,
-  untarXz,
-  unzip,
-  zip,
-} from "./utils/compression.mts";
-import type { ArchiveFormat, OsArch, Os, Arch } from "./utils/types.mts";
+  githubReleaseCreate,
+  githubReleaseDelete,
+  githubReleaseEdit,
+  githubReleaseUpload,
+} from "./utils/github-releases.mts";
+import {
+  inferArchiveFormat,
+  sortEntries,
+} from "./repackage-versions/infer-format.mts";
+
+const REPO = "alshdavid/install-scripts";
 
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 const root = path.dirname(dirname);
-const mirror = path.join(root, "dist", "mirror");
 const tmpRoot = path.join(root, "tmp");
+const tmpDownloads = path.join(root, "tmp", "downloads");
 
-type EntryRecord = {
+type DownloadManifestEntry = {
   project: string;
   version: string;
+  format?: ArchiveFormat;
+  url: string;
   os: Os;
   arch: Arch;
-  download_url_gz: string;
-  download_url_xz: string;
-  download_url_zip: string;
+  stripComponents?: number;
 };
 
-const index: Record<string, string> = {};
-const index_entries_obj: Array<EntryRecord> = [];
+type DownloadManifest = Record<string, Array<DownloadManifestEntry>>;
 
 export async function main() {
-  if (fs.existsSync(tmpRoot)) {
-    fs.rmSync(tmpRoot, { recursive: true, force: true });
-  }
-  fs.mkdirSync(tmpRoot);
-
-  if (!fs.existsSync(mirror)) {
-    fs.mkdirSync(mirror, { recursive: true });
+  if (!fs.existsSync(tmpDownloads)) {
+    fs.mkdirSync(tmpDownloads, { recursive: true });
   }
 
-  await Promise.all([deno(), just(), terraform()]);
+  const downloadManifest: DownloadManifest = {};
 
-  // Generate index
-  await fs.promises.writeFile(
-    path.join(mirror, "index.json"),
-    JSON.stringify(index, null, 2),
-    "utf8"
-  );
+  await Promise.all([
+    deno(downloadManifest),
+    just(downloadManifest),
+    terraform(downloadManifest),
+    go(downloadManifest),
+    nodejs(downloadManifest),
+    python(downloadManifest),
+    procmon(downloadManifest),
+    rrm(downloadManifest),
+    flatDir(downloadManifest),
+    vultrCli(downloadManifest),
+  ]);
 
-  index_entries_obj.sort((a, b) => {
-    const nameA = a[0].toUpperCase();
-    const nameB = b[0].toUpperCase();
+  const downloadManifestEntries = Object.entries(downloadManifest);
+  downloadManifestEntries.sort((a, b) => sortEntries(a[0], b[0]));
 
-    if (nameA < nameB) {
-      return -1;
+  for (const [releaseName, downloads] of downloadManifestEntries) {
+    if (await releaseExists(REPO, releaseName)) {
+      console.log(`[${releaseName}] Release Exists Skipping`);
+      continue;
     }
-    if (nameA > nameB) {
-      return 1;
+
+    console.log(`[${releaseName}] Download`);
+
+    try {
+      await githubReleaseCreate({
+        repo: REPO,
+        title: releaseName,
+        tag: releaseName,
+        draft: true,
+        notes: JSON.stringify({
+          package: downloads[0].project,
+          version: downloads[0].version,
+        }),
+      });
+
+      for (const {
+        project,
+        version,
+        os,
+        arch,
+        format,
+        url,
+        stripComponents,
+      } of downloads) {
+        const success = await recompress(
+          tmpRoot,
+          tmpDownloads,
+          url,
+          format || inferArchiveFormat(url),
+          project,
+          `${os}-${arch}`,
+          version,
+          stripComponents,
+        );
+        if (!success) {
+          console.log(`Skipping download for: ${url}`);
+          continue;
+        }
+
+        console.log(
+          `[${releaseName}] Upload ${project}-${version}-${os}-${arch}.tar.gz`,
+        );
+        await githubReleaseUpload({
+          repo: REPO,
+          tag: releaseName,
+          file: path.join(
+            tmpRoot,
+            `${project}-${version}-${os}-${arch}.tar.gz`,
+          ),
+        });
+
+        console.log(
+          `[${releaseName}] Upload ${project}-${version}-${os}-${arch}.tar.xz`,
+        );
+        await githubReleaseUpload({
+          repo: REPO,
+          tag: releaseName,
+          file: path.join(
+            tmpRoot,
+            `${project}-${version}-${os}-${arch}.tar.xz`,
+          ),
+        });
+
+        console.log(
+          `[${releaseName}] Upload ${project}-${version}-${os}-${arch}.zip`,
+        );
+        await githubReleaseUpload({
+          repo: REPO,
+          tag: releaseName,
+          file: path.join(tmpRoot, `${project}-${version}-${os}-${arch}.zip`),
+        });
+      }
+
+      await githubReleaseEdit({
+        repo: REPO,
+        tag: releaseName,
+        draft: false,
+      });
+      console.log(`[${releaseName}] Done`);
+    } catch (error) {
+      console.log(`[${releaseName}] Failed`);
+
+      await githubReleaseDelete({
+        repo: REPO,
+        tag: releaseName,
+      });
     }
-    return 0;
-  });
-
-  let index_entries: Record<string, Array<EntryRecord>> = {};
-  for (const entry of index_entries_obj) {
-    if (!index_entries[entry.project]) index_entries[entry.project] = [];
-    index_entries[entry.project].push(entry);
   }
-
-  let template = await fs.promises.readFile(
-    path.join(dirname, "mirror.ejs"),
-    "utf8"
-  );
-
-  const ctx = {
-    get root() {
-      return root;
-    },
-    get filename() {
-      return filename;
-    },
-    get dirname() {
-      return dirname;
-    },
-    get path() {
-      return path;
-    },
-    get ctx() {
-      return ctx;
-    },
-    entries: index_entries
-  };
-
-  const result = await ejs.render(template, ctx, {
-    async: true,
-    cache: false,
-    filename: template,
-  });
-
-  const formatted = await prettier.format(result, {
-    parser: "html",
-  });
-
-  await fs.promises.writeFile(
-    path.join(mirror, "index.html"),
-    formatted,
-    "utf8"
-  );
 }
 
-export async function just() {
+async function deno(manifest: DownloadManifest): Promise<void> {
+  const project = "deno";
+  const resp = await githubApi.getRelease("denoland/deno");
+  const version = resp.tag_name.replace("v", "");
+
+  // prettier-ignore
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64',   url: `https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-unknown-linux-gnu.zip`   },
+    { project, version, os: 'linux',    arch:  'arm64',   url: `https://github.com/denoland/deno/releases/download/v${version}/deno-aarch64-unknown-linux-gnu.zip`  },
+    { project, version, os: 'macos',    arch:  'amd64',   url: `https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-apple-darwin.zip`        },
+    { project, version, os: 'macos',    arch:  'arm64',   url: `https://github.com/denoland/deno/releases/download/v${version}/deno-aarch64-apple-darwin.zip`       },
+    { project, version, os: 'windows',  arch:  'amd64',   url: `https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-pc-windows-msvc.zip`     },
+  ]
+}
+
+async function just(manifest: DownloadManifest): Promise<void> {
   const project = "just";
   const resp = await githubApi.getRelease("casey/just");
   const version = resp.tag_name;
 
   // prettier-ignore
-  const downloads: Array<[OsArch, ArchiveFormat, string]> = [
-    ['linux-amd64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`],
-    ['linux-arm64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz`],
-    ['macos-amd64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-apple-darwin.tar.gz`],
-    ['macos-arm64',   'tar.gz',   `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-apple-darwin.tar.gz`],
-    ['windows-amd64', 'zip',      `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-pc-windows-msvc.zip`],
-    ['windows-arm64', 'zip',      `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`],
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64',    url: `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-unknown-linux-musl.tar.gz`  },
+    { project, version, os: 'linux',    arch:  'arm64',    url: `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-unknown-linux-musl.tar.gz` },
+    { project, version, os: 'macos',    arch:  'amd64',    url: `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-apple-darwin.tar.gz`        },
+    { project, version, os: 'macos',    arch:  'arm64',    url: `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-apple-darwin.tar.gz`       },
+    { project, version, os: 'windows',  arch:  'amd64',       url: `https://github.com/casey/just/releases/download/${version}/just-${version}-x86_64-pc-windows-msvc.zip`        },
+    { project, version, os: 'windows',  arch:  'arm64',       url: `https://github.com/casey/just/releases/download/${version}/just-${version}-aarch64-pc-windows-msvc.zip`       },
   ]
-
-  for (const [os_arch, format, url] of downloads) {
-    await recompress(url, format, project, os_arch, "latest");
-  }
-
-  console.log(`${project}: ${version}`);
 }
 
-export async function terraform() {
+async function terraform(manifest: DownloadManifest): Promise<void> {
   const project = "terraform";
   const resp = await githubApi.getRelease("hashicorp/terraform");
   const version = resp.tag_name.replace("v", "");
 
   // prettier-ignore
-  const downloads: Array<[OsArch, ArchiveFormat, string]> = [
-    ['linux-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip`],
-    ['linux-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_arm64.zip`],
-    ['macos-amd64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip`],
-    ['macos-arm64',   'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip`],
-    ['windows-amd64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_amd64.zip`],
-    // ['windows-arm64', 'zip',      `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_arm64.zip`],
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64',    url: `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip`   },
+    { project, version, os: 'linux',    arch:  'arm64',    url: `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_arm64.zip`   },
+    { project, version, os: 'macos',    arch:  'amd64',    url: `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_amd64.zip`  },
+    { project, version, os: 'macos',    arch:  'arm64',    url: `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_darwin_arm64.zip`  },
+    { project, version, os: 'windows',  arch:  'amd64',       url: `https://releases.hashicorp.com/terraform/${version}/terraform_${version}_windows_amd64.zip` },
   ]
-
-  for (const [os_arch, format, url] of downloads) {
-    await recompress(url, format, project, os_arch, "latest");
-  }
-
-  console.log(`${project}: ${version}`);
 }
 
-export async function deno() {
-  const project = "deno";
-  const resp = await githubApi.getRelease("denoland/deno");
+async function go(manifest: DownloadManifest): Promise<void> {
+  const project = "go";
+  const resp = await globalThis.fetch("https://go.dev/dl/?mode=json");
+  const body = await resp.json();
+  const version = body[0].version.replace("go", "");
+
+  // prettier-ignore
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64', url: `https://go.dev/dl/go${version}.linux-amd64.tar.gz`,   stripComponents: 1  },
+    { project, version, os: 'linux',    arch:  'arm64', url: `https://go.dev/dl/go${version}.linux-arm64.tar.gz`,   stripComponents: 1  },
+    { project, version, os: 'macos',    arch:  'amd64', url: `https://go.dev/dl/go${version}.darwin-amd64.tar.gz`,  stripComponents: 1  },
+    { project, version, os: 'macos',    arch:  'arm64', url: `https://go.dev/dl/go${version}.darwin-arm64.tar.gz`,  stripComponents: 1  },
+    { project, version, os: 'windows',  arch:  'amd64', url: `https://go.dev/dl/go${version}.windows-amd64.zip`,    stripComponents: 1  },
+    { project, version, os: 'windows',  arch:  'arm64', url: `https://go.dev/dl/go${version}.windows-arm64.zip`,    stripComponents: 1  },
+  ]
+}
+
+async function nodejs(manifest: DownloadManifest): Promise<void> {
+  const project = "nodejs";
+  const resp = await nodejsApi.getReleases();
+
+  const allVersions: Record<string, Array<string>> = {};
+
+  // Get the latest release of the last 7 major releases
+  for (const release of resp) {
+    const version = release.version.replace("v", "");
+    const [major, minor] = version.split(".");
+    const key = `${major}`;
+    allVersions[key] = allVersions[key] || [];
+    if (allVersions[key].length >= 1) {
+      continue;
+    }
+    allVersions[key].push(version);
+  }
+
+  const allVersionsEntries = Object.entries(allVersions);
+  allVersionsEntries.sort((a, b) => sortEntries(`${a[0]}.0.0`, `${b[0]}.0.0`));
+  const versions = [
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+  ];
+
+  for (const [_, minorVersions] of versions) {
+    for (const version of minorVersions) {
+      // prettier-ignore
+      manifest[`${project}-${version}`] = [
+        { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
+        { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
+        { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
+        { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
+        { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
+        { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
+      ]
+    }
+  }
+}
+
+async function procmon(manifest: DownloadManifest): Promise<void> {
+  const project = "procmon";
+  const resp = await githubApi.getRelease(`alshdavid/${project}`);
   const version = resp.tag_name;
 
   // prettier-ignore
-  const downloads: Array<[OsArch, ArchiveFormat, string]> = [
-    ['linux-amd64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-x86_64-unknown-linux-gnu.zip`],
-    ['linux-arm64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-aarch64-unknown-linux-gnu.zip`],
-    ['macos-amd64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-x86_64-apple-darwin.zip`],
-    ['macos-arm64',   'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-aarch64-apple-darwin.zip`],
-    ['windows-amd64', 'zip',      `https://github.com/denoland/deno/releases/download/${version}/deno-x86_64-pc-windows-msvc.zip`],
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-amd64.tar.gz`   },
+    { project, version, os: 'linux',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-arm64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-amd64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-arm64.tar.gz`   },
+    { project, version, os: 'windows',  arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-amd64.tar.gz` },
+    { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-arm64.tar.gz` },
   ]
-
-  for (const [os_arch, format, url] of downloads) {
-    await recompress(url, format, project, os_arch, "latest");
-  }
-
-  console.log(`${project}: ${version}`);
 }
 
-async function recompress(
-  url: string,
-  format: ArchiveFormat,
-  project: string,
-  os_arch: OsArch,
-  version: string
-): Promise<void> {
-  const inputName = `${project}-${version}-${os_arch}`;
-  const inputArchive = `${project}-${version}-${os_arch}.${format}`;
+async function rrm(manifest: DownloadManifest): Promise<void> {
+  const project = "rrm";
+  const resp = await githubApi.getRelease(`alshdavid/${project}`);
+  const version = resp.tag_name;
 
-  index_entries_obj.push({
-    project,
-    version,
-    os: os_arch.split("-")[0] as any,
-    arch: os_arch.split("-")[1] as any,
-    download_url_gz: `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`,
-    download_url_xz: `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`,
-    download_url_zip: `https://sh.davidalsh.com/mirror/${inputName}.zip`,
-  });
-
-  index[`${inputName}.tar.xz`] =
-    `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`;
-  index[`${inputName}.tar.gz`] =
-    `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`;
-  index[`${inputName}.zip`] =
-    `https://sh.davidalsh.com/mirror/${inputName}.zip`;
-
-  const archives = await Promise.all([
-    checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.tar.xz`),
-    checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.tar.gz`),
-    checkUrlExists(`https://sh.davidalsh.com/mirror/${inputName}.zip`),
-  ]);
-
-  // Reuse if already exists
-  if (!archives.includes(false)) {
-    await wget(
-      `https://sh.davidalsh.com/mirror/${inputName}.tar.xz`,
-      path.join(mirror, `${inputName}.tar.xz`)
-    );
-    await wget(
-      `https://sh.davidalsh.com/mirror/${inputName}.tar.gz`,
-      path.join(mirror, `${inputName}.tar.gz`)
-    );
-    await wget(
-      `https://sh.davidalsh.com/mirror/${inputName}.zip`,
-      path.join(mirror, `${inputName}.zip`)
-    );
-
-    return;
-  }
-
-  await wget(url, path.join(mirror, inputArchive));
-
-  switch (format) {
-    case "tar.gz":
-      await untarGz(
-        path.join(mirror, inputArchive),
-        path.join(tmpRoot, inputName)
-      );
-      break;
-    case "tar.xz":
-      await untarXz(
-        path.join(mirror, inputArchive),
-        path.join(tmpRoot, inputName)
-      );
-      break;
-    case "zip":
-      await unzip(
-        path.join(mirror, inputArchive),
-        path.join(tmpRoot, inputName)
-      );
-    case "bin":
-      await fs.promises.mkdir(path.join(tmpRoot, inputName), {
-        recursive: true,
-      });
-      await fs.promises.cp(
-        path.join(mirror, inputArchive),
-        path.join(tmpRoot, inputName, inputName)
-      );
-      break;
-    default:
-      throw new Error(`ArchiveFormat not supported: ${format}`);
-  }
-
-  await tarXz(
-    path.join(tmpRoot, inputName),
-    path.join(mirror, `${inputName}.tar.xz`)
-  );
-
-  await tarGz(
-    path.join(tmpRoot, inputName),
-    path.join(mirror, `${inputName}.tar.gz`)
-  );
-
-  await zip(
-    path.join(tmpRoot, inputName),
-    path.join(mirror, `${inputName}.zip`)
-  );
+  // prettier-ignore
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-amd64.tar.gz`   },
+    { project, version, os: 'linux',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-arm64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-amd64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-arm64.tar.gz`   },
+    { project, version, os: 'windows',  arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-amd64.tar.gz` },
+    { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-arm64.tar.gz` },
+  ]
 }
 
-async function checkUrlExists(url: string) {
-  try {
-    const response = await globalThis.fetch(url, { method: "HEAD" });
-    if (response.ok) {
-      return true;
-    } else {
-      console.log(`URL ${url} returned status: ${response.status}`);
-      return false;
+async function flatDir(manifest: DownloadManifest): Promise<void> {
+  const project = "flatdir";
+  const resp = await githubApi.getRelease(`alshdavid/${project}`);
+  const version = resp.tag_name;
+
+  // prettier-ignore
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-amd64.tar.gz`   },
+    { project, version, os: 'linux',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-linux-arm64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-amd64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-macos-arm64.tar.gz`   },
+    { project, version, os: 'windows',  arch:  'amd64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-amd64.tar.gz` },
+    { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-arm64.tar.gz` },
+  ]
+}
+
+async function vultrCli(manifest: DownloadManifest): Promise<void> {
+  const project = "vultr-cli";
+  const resp = await githubApi.getRelease("vultr/vultr-cli");
+  const version = resp.tag_name.replace("v", "");
+
+  // prettier-ignore
+  manifest[`${project}-${version}`] = [
+    { project, version, os: 'linux',    arch:  'amd64', url: `https://github.com/vultr/vultr-cli/releases/download/v${version}/vultr-cli_v${version}_linux_amd64.tar.gz`   },
+    { project, version, os: 'linux',    arch:  'arm64', url: `https://github.com/vultr/vultr-cli/releases/download/v${version}/vultr-cli_v${version}_linux_arm64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'amd64', url: `https://github.com/vultr/vultr-cli/releases/download/v${version}/vultr-cli_v${version}_macOs_amd64.tar.gz`   },
+    { project, version, os: 'macos',    arch:  'arm64', url: `https://github.com/vultr/vultr-cli/releases/download/v${version}/vultr-cli_v${version}_macOs_arm64.tar.gz`   },
+    { project, version, os: 'windows',  arch:  'amd64', url: `https://github.com/vultr/vultr-cli/releases/download/v${version}/vultr-cli_v${version}_windows_amd64.zip`    },
+    { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/vultr/vultr-cli/releases/download/v${version}/vultr-cli_v${version}_windows_arm64.zip`    },
+  ]
+}
+
+async function python(manifest: DownloadManifest): Promise<void> {
+  const project = "python";
+  const resp = await githubApi.getRelease("astral-sh/python-build-standalone");
+
+  for (const asset of resp.assets) {
+    if (!asset.name.includes("x86_64-") && !asset.name.includes("aarch64")) {
+      continue;
     }
-  } catch (error) {
-    console.error(`Error checking URL ${url}:`, error);
-    return false;
+    if (
+      !asset.name.includes("linux-gnu-install_only_stripped") &&
+      !asset.name.includes("windows-msvc-install_only_stripped") &&
+      !asset.name.includes("darwin-install_only_stripped")
+    ) {
+      continue;
+    }
+
+    const segs = asset.name.split("-");
+    const [major, minor, patch] = segs[1].split("+")[0].split(".");
+    const arch = (
+      {
+        x86_64: "amd64",
+        aarch64: "arm64",
+      } as Record<string, Arch>
+    )[segs[2]];
+    const os = (
+      {
+        darwin: "macos",
+        windows: "windows",
+        linux: "linux",
+      } as Record<string, Os>
+    )[segs[4]];
+    if (!arch || !os) {
+      continue;
+    }
+
+    const key = `${project}-${major}.${minor}.${patch}`;
+    const version = `${major}.${minor}.${patch}`;
+
+    manifest[key] = manifest[key] || [];
+    manifest[key].push({
+      project,
+      version,
+      os,
+      arch,
+      url: asset.browser_download_url,
+      stripComponents: 1,
+    });
   }
 }

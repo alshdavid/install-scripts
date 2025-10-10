@@ -9,3 +9,8 @@ export type OsArch =
   | "windows-amd64"
   | "windows-arm64";
 export type ArchiveFormat = "tar.gz" | "tar.xz" | "zip" | "bin";
+
+export type ReleaseMeta = {
+  package: string;
+  version: string;
+};

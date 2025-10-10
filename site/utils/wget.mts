@@ -1,19 +1,16 @@
-import * as fs from 'node:fs'
-import { sh } from './sh.mts'
+import * as fs from "node:fs";
+import { sh } from "./sh.mts";
 
 export async function wget(url: string, dest: string): Promise<void> {
   if (fs.existsSync(dest)) {
-    return
+    return;
   }
 
-  await sh(
-    "wget",
-    [
-      "--progress=bar:force:noscroll",
-      "--trust-server-names",
-      "-O",
-      dest,
-      url,
-    ]
-  );
+  await sh("wget", [
+    "--progress=bar:force:noscroll",
+    "--trust-server-names",
+    "-O",
+    dest,
+    url,
+  ]);
 }

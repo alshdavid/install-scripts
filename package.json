@@ -6,7 +6,9 @@
     "build": "node ./site/main.mts"
   },
   "dependencies": {
-    "@types/node": "^24.5.2"
+    "@types/node": "^24.5.2",
+    "@types/semver": "^7.7.1",
+    "semver": "^7.7.3"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",

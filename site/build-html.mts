@@ -16,24 +16,24 @@ export async function main() {
 
   const ctx = {
     get root() {
-      return root
+      return root;
     },
     get filename() {
-      return filename
+      return filename;
     },
     get dirname() {
-      return dirname
+      return dirname;
     },
     get path() {
-      return path
+      return path;
     },
     get fs() {
       return {
         get exists() {
-          return fs.existsSync
+          return fs.existsSync;
         },
-        ...fs.promises
-      }
+        ...fs.promises,
+      };
     },
     get ctx() {
       return ctx;
@@ -47,9 +47,9 @@ export async function main() {
   });
 
   const formatted = await prettier.format(result, {
-    parser: 'html'
-  })
+    parser: "html",
+  });
 
-  if (fs.existsSync(outfile)) await fs.promises.rm(outfile)
-  await fs.promises.writeFile(outfile, formatted, { encoding: 'utf-8' })
+  if (fs.existsSync(outfile)) await fs.promises.rm(outfile);
+  await fs.promises.writeFile(outfile, formatted, { encoding: "utf-8" });
 }
