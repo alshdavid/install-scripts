@@ -11,10 +11,23 @@ export async function getRelease(
   repo: string,
   tag?: string,
 ): Promise<GithubReleaseResponse> {
-  const url = `https://api.github.com/repos/${repo}/releases/${tag ? `tags/${tag}` : "latest"}`;
-  const resp = await globalThis.fetch(url);
+  let endpoint = "latest";
+  if (tag) {
+    endpoint = `tags/${tag}`;
+  }
+  const url = `https://api.github.com/repos/${repo}/releases/${endpoint}`;
+  let init: RequestInit | undefined = undefined;
+  if (process.env.GITHUB_TOKEN) {
+    init = {
+      headers: {
+        Authorization: process.env.GITHUB_TOKEN,
+      },
+    };
+  }
+  const resp = await globalThis.fetch(url, init);
   if (!resp.ok) {
-    throw new Error(`Unable to fetch release for ${repo}/${tag}`);
+    console.log(resp.statusText);
+    throw new Error(`Unable to fetch release for ${url}`);
   }
   const body = await resp.json();
   return body as GithubReleaseResponse;
@@ -32,11 +45,19 @@ export type GithubReleasesResponse = Array<{
 export async function getReleases(
   repo: string,
 ): Promise<GithubReleasesResponse> {
-  const resp = await globalThis.fetch(
-    `https://api.github.com/repos/${repo}/releases`,
-  );
+  const url = `https://api.github.com/repos/${repo}/releases`;
+  let init: RequestInit | undefined = undefined;
+  if (process.env.GITHUB_TOKEN) {
+    init = {
+      headers: {
+        Authorization: process.env.GITHUB_TOKEN,
+      },
+    };
+  }
+  const resp = await globalThis.fetch(url, init);
   if (!resp.ok) {
-    throw new Error(`Unable to fetch release for ${repo}`);
+    console.log(resp.statusText);
+    throw new Error(`Unable to fetch release for ${url}`);
   }
   const body = await resp.json();
   return body as GithubReleasesResponse;

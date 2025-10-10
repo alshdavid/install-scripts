@@ -51,7 +51,7 @@ function findDownload(
   release: GithubReleasesResponse[0],
   os: Os,
   arch: Arch,
-  kind: ArchiveFormat
+  kind: ArchiveFormat,
 ): string | undefined {
   for (const asset of release.assets) {
     if (
@@ -122,7 +122,7 @@ export async function main() {
   await fs.promises.writeFile(
     path.join(dir_versions, "index.json"),
     JSON.stringify(sorted, null, 2),
-    "utf8"
+    "utf8",
   );
 
   for (const [packageName, versions] of Object.entries(sorted)) {
@@ -130,7 +130,7 @@ export async function main() {
       await fs.promises.writeFile(
         path.join(dir_versions, `${packageName}.json`),
         JSON.stringify(versions, null, 2),
-        "utf8"
+        "utf8",
       );
     }
   }
@@ -149,22 +149,22 @@ export async function main() {
       await fs.promises.writeFile(
         path.join(dir_versions, version.package, `${version.version}.json`),
         JSON.stringify(version, null, 2),
-        "utf8"
+        "utf8",
       );
 
-      await createVersionTexts(version)
+      await createVersionTexts(version);
 
       if (
         !fs.existsSync(
-          path.join(dir_versions, version.package, `${sv.major}.json`)
+          path.join(dir_versions, version.package, `${sv.major}.json`),
         )
       ) {
         await fs.promises.writeFile(
           path.join(dir_versions, version.package, `${sv.major}.json`),
           JSON.stringify(version, null, 2),
-          "utf8"
+          "utf8",
         );
-        await createVersionTexts(version, `${sv.major}`)
+        await createVersionTexts(version, `${sv.major}`);
       }
 
       if (
@@ -173,9 +173,9 @@ export async function main() {
         await fs.promises.writeFile(
           path.join(dir_versions, version.package, `latest.json`),
           JSON.stringify(version, null, 2),
-          "utf8"
+          "utf8",
         );
-        await createVersionTexts(version, `latest`)
+        await createVersionTexts(version, `latest`);
       }
     }
   }
@@ -192,20 +192,20 @@ export async function main() {
           path.join(
             dir_versions,
             version.package,
-            `${sv.major}.${sv.minor}.json`
-          )
+            `${sv.major}.${sv.minor}.json`,
+          ),
         )
       ) {
         await fs.promises.writeFile(
           path.join(
             dir_versions,
             version.package,
-            `${sv.major}.${sv.minor}.json`
+            `${sv.major}.${sv.minor}.json`,
           ),
           JSON.stringify(version, null, 2),
-          "utf8"
+          "utf8",
         );
-        await createVersionTexts(version, `${sv.major}.${sv.minor}`)
+        await createVersionTexts(version, `${sv.major}.${sv.minor}`);
       }
     }
   }
@@ -223,7 +223,7 @@ export async function main() {
       await fs.promises.writeFile(
         path.join(dir_versions, version.package, `${version.version}.json`),
         JSON.stringify(version, null, 2),
-        "utf8"
+        "utf8",
       );
     }
   }
@@ -248,14 +248,22 @@ async function createVersionTexts(version: VersionEntry, name?: string) {
       continue;
     }
     await fs.promises.writeFile(
-      path.join(dir_versions, version.package, `${name || version.version}_${key}`),
+      path.join(
+        dir_versions,
+        version.package,
+        `${name || version.version}_${key}`,
+      ),
       version[key],
-      "utf8"
+      "utf8",
     );
     await fs.promises.writeFile(
-      path.join(dir_versions, version.package, `${name || version.version}_${key}.txt`),
+      path.join(
+        dir_versions,
+        version.package,
+        `${name || version.version}_${key}.txt`,
+      ),
       version[key],
-      "utf8"
+      "utf8",
     );
   }
 }

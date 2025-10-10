@@ -63,7 +63,7 @@ export async function main() {
     nodejs(downloadManifest),
     python(downloadManifest),
     vultrCli(downloadManifest),
-    
+
     // alshdavid projects
     http_server_rs(downloadManifest),
     procmon(downloadManifest),
@@ -278,7 +278,7 @@ async function nodejs(manifest: DownloadManifest): Promise<void> {
 }
 
 async function http_server_rs(manifest: DownloadManifest): Promise<void> {
-  const project = "alshdavid/http-server-rs";
+  const project = "http-server-rs";
   const resp = await githubApi.getRelease(`alshdavid/${project}`);
   const version = resp.tag_name;
 
@@ -292,7 +292,6 @@ async function http_server_rs(manifest: DownloadManifest): Promise<void> {
     { project, version, os: 'windows',  arch:  'arm64', url: `https://github.com/alshdavid/${project}/releases/download/${version}/${project}-windows-arm64.tar.gz` },
   ]
 }
-
 
 async function procmon(manifest: DownloadManifest): Promise<void> {
   const project = "procmon";
