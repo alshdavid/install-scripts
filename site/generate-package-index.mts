@@ -6,53 +6,52 @@ import * as nodejsApi from "./utils/nodejs.mts";
 
 import { getReleases, type GithubReleasesResponse } from "./utils/github.mts";
 import type { Arch, ArchiveFormat, Os, ReleaseMeta } from "./utils/types.mts";
-import { sortEntries } from "./repackage-versions/infer-format.mts";
+import {
+  sortEntries,
+  tryParseSemver,
+} from "./repackage-versions/infer-format.mts";
 
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 const root = path.dirname(dirname);
-const dir_versions = path.join(root, "dist", "versions");
+const dir_versions = path.join(root, "dist", "packages");
 
-type VersionIndex = Record<
-  string,
-  Record<
-    string,
-    {
-      package: string;
-      version: string;
+type VersionEntry = {
+  package: string;
+  version: string;
 
-      linux_amd64_tar_gz?: string;
-      linux_amd64_tar_xz?: string;
-      linux_amd64_zip?: string;
+  linux_amd64_tar_gz?: string;
+  linux_amd64_tar_xz?: string;
+  linux_amd64_zip?: string;
 
-      linux_arm64_tar_gz?: string;
-      linux_arm64_tar_xz?: string;
-      linux_arm64_zip?: string;
+  linux_arm64_tar_gz?: string;
+  linux_arm64_tar_xz?: string;
+  linux_arm64_zip?: string;
 
-      macos_amd64_tar_gz?: string;
-      macos_amd64_tar_xz?: string;
-      macos_amd64_zip?: string;
+  macos_amd64_tar_gz?: string;
+  macos_amd64_tar_xz?: string;
+  macos_amd64_zip?: string;
 
-      macos_arm64_tar_gz?: string;
-      macos_arm64_tar_xz?: string;
-      macos_arm64_zip?: string;
+  macos_arm64_tar_gz?: string;
+  macos_arm64_tar_xz?: string;
+  macos_arm64_zip?: string;
 
-      windows_amd64_tar_gz?: string;
-      windows_amd64_tar_xz?: string;
-      windows_amd64_zip?: string;
+  windows_amd64_tar_gz?: string;
+  windows_amd64_tar_xz?: string;
+  windows_amd64_zip?: string;
 
-      windows_arm64_tar_gz?: string;
-      windows_arm64_tar_xz?: string;
-      windows_arm64_zip?: string;
-    }
-  >
->;
+  windows_arm64_tar_gz?: string;
+  windows_arm64_tar_xz?: string;
+  windows_arm64_zip?: string;
+};
+
+type VersionIndex = Record<string, Record<string, VersionEntry>>;
 
 function findDownload(
   release: GithubReleasesResponse[0],
   os: Os,
   arch: Arch,
-  kind: ArchiveFormat,
+  kind: ArchiveFormat
 ): string | undefined {
   for (const asset of release.assets) {
     if (
@@ -113,7 +112,9 @@ export async function main() {
     };
   }
 
+  // Sort packages alphabetically
   const sorted = sortObject(index);
+  // Sort versions by semver or alphabetically, newest semver version at [0]
   for (const key in sorted) {
     sorted[key] = sortObject(sorted[key], true);
   }
@@ -121,7 +122,7 @@ export async function main() {
   await fs.promises.writeFile(
     path.join(dir_versions, "index.json"),
     JSON.stringify(sorted, null, 2),
-    "utf8",
+    "utf8"
   );
 
   for (const [packageName, versions] of Object.entries(sorted)) {
@@ -129,16 +130,101 @@ export async function main() {
       await fs.promises.writeFile(
         path.join(dir_versions, `${packageName}.json`),
         JSON.stringify(versions, null, 2),
-        "utf8",
+        "utf8"
+      );
+    }
+  }
+
+  // Semver Majors
+  for (const versions of Object.values(sorted)) {
+    for (const version of Object.values(versions)) {
+      const sv = tryParseSemver(version.version);
+      if (!sv) {
+        break;
+      }
+      await fs.promises.mkdir(path.join(dir_versions, version.package), {
+        recursive: true,
+      });
+
+      await fs.promises.writeFile(
+        path.join(dir_versions, version.package, `${version.version}.json`),
+        JSON.stringify(version, null, 2),
+        "utf8"
       );
 
-      for (const version of Object.values(versions)) {
+      await createVersionTexts(version)
+
+      if (
+        !fs.existsSync(
+          path.join(dir_versions, version.package, `${sv.major}.json`)
+        )
+      ) {
         await fs.promises.writeFile(
-          path.join(dir_versions, `${version.package}-${version.version}.json`),
+          path.join(dir_versions, version.package, `${sv.major}.json`),
           JSON.stringify(version, null, 2),
-          "utf8",
+          "utf8"
         );
+        await createVersionTexts(version, `${sv.major}`)
       }
+
+      if (
+        !fs.existsSync(path.join(dir_versions, version.package, `latest.json`))
+      ) {
+        await fs.promises.writeFile(
+          path.join(dir_versions, version.package, `latest.json`),
+          JSON.stringify(version, null, 2),
+          "utf8"
+        );
+        await createVersionTexts(version, `latest`)
+      }
+    }
+  }
+
+  // Semver Minors
+  for (const versions of Object.values(sorted)) {
+    for (const version of Object.values(versions)) {
+      const sv = tryParseSemver(version.version);
+      if (!sv) {
+        break;
+      }
+      if (
+        !fs.existsSync(
+          path.join(
+            dir_versions,
+            version.package,
+            `${sv.major}.${sv.minor}.json`
+          )
+        )
+      ) {
+        await fs.promises.writeFile(
+          path.join(
+            dir_versions,
+            version.package,
+            `${sv.major}.${sv.minor}.json`
+          ),
+          JSON.stringify(version, null, 2),
+          "utf8"
+        );
+        await createVersionTexts(version, `${sv.major}.${sv.minor}`)
+      }
+    }
+  }
+
+  // Non Semver
+  for (const versions of Object.values(sorted)) {
+    for (const version of Object.values(versions)) {
+      if (tryParseSemver(version.version)) {
+        break;
+      }
+      await fs.promises.mkdir(path.join(dir_versions, version.package), {
+        recursive: true,
+      });
+
+      await fs.promises.writeFile(
+        path.join(dir_versions, version.package, `${version.version}.json`),
+        JSON.stringify(version, null, 2),
+        "utf8"
+      );
     }
   }
 }
@@ -154,4 +240,22 @@ function sortObject<T extends Object>(input: T, reverse: boolean = false): T {
     acc[key as keyof T] = input[key as keyof T];
     return acc;
   }, {} as T);
+}
+
+async function createVersionTexts(version: VersionEntry, name?: string) {
+  for (const [key, value] of Object.entries(version)) {
+    if ((!key.includes("_tar") && !key.includes("_zip")) || !value) {
+      continue;
+    }
+    await fs.promises.writeFile(
+      path.join(dir_versions, version.package, `${name || version.version}_${key}`),
+      version[key],
+      "utf8"
+    );
+    await fs.promises.writeFile(
+      path.join(dir_versions, version.package, `${name || version.version}_${key}.txt`),
+      version[key],
+      "utf8"
+    );
+  }
 }

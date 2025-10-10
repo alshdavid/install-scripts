@@ -33,7 +33,7 @@ export function sortEntries(a: string, b: string) {
   }
 }
 
-function tryParseSemver(str: string): semver.SemVer {
+export function tryParseSemver(str: string): semver.SemVer {
   try {
     return semver.parse(str);
   } catch (error) {}
