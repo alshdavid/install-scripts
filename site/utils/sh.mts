@@ -31,7 +31,7 @@ export function sh(
           stderr,
         });
       } else {
-        reject(new Error(`Command failed with exit code ${code}`));
+        reject(new Error(`Command "${command} ${args.join(' ')}" failed with exit code ${code}`));
       }
     });
 
