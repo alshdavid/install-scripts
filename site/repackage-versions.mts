@@ -57,20 +57,21 @@ export async function main() {
   const downloadManifest: DownloadManifest = {};
 
   await Promise.all([
-    deno(downloadManifest),
-    just(downloadManifest),
-    terraform(downloadManifest),
-    go(downloadManifest),
+    // deno(downloadManifest),
+    // just(downloadManifest),
+    // terraform(downloadManifest),
+    // go(downloadManifest),
     nodejs(downloadManifest),
-    python(downloadManifest),
-    vultrCli(downloadManifest),
+    // python(downloadManifest),
+    // vultrCli(downloadManifest),
 
     // alshdavid projects
-    http_server_rs(downloadManifest),
-    rrm(downloadManifest),
-    flatDir(downloadManifest),
+    // http_server_rs(downloadManifest),
+    // rrm(downloadManifest),
+    // flatDir(downloadManifest),
   ]);
 
+  console.log(downloadManifest)
   const downloadManifestEntries = Object.entries(downloadManifest);
   downloadManifestEntries.sort((a, b) => sortEntries(a[0], b[0]));
 
@@ -258,20 +259,9 @@ async function nodejs(manifest: DownloadManifest): Promise<void> {
   // Get all versions of Nodejs
   for (const release of resp) {
     const version = release.version.replace("v", "");
-    if (version.startsWith('0')) continue
-    if (version.startsWith('1')) continue
-    if (version.startsWith('2')) continue
-    if (version.startsWith('3')) continue
-    if (version.startsWith('4')) continue
-    if (version.startsWith('5')) continue
-    if (version.startsWith('6')) continue
-    if (version.startsWith('7')) continue
-    if (version.startsWith('7')) continue
-    if (version.startsWith('9')) continue
-    if (version.startsWith('10')) continue
-    if (version.startsWith('11')) continue
-    if (version.startsWith('12')) continue
-    if (version.startsWith('13')) continue
+    const [major, minor, patch] = version.split('.')
+    const majorInt = parseInt(major, 10)
+    if (majorInt < 18) continue
     
     // prettier-ignore
     console.log(version)
