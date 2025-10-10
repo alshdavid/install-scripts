@@ -92,8 +92,6 @@ export async function main() {
       });
     }
 
-    continue
-
     if (await releaseExists(REPO, releaseName)) {
       console.log(`[${releaseName}] Release Exists Skipping`);
       continue;
