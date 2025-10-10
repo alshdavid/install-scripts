@@ -18,11 +18,11 @@ export async function getRelease(
   const url = `https://api.github.com/repos/${repo}/releases/${endpoint}`;
   let init: RequestInit | undefined = undefined;
   if (process.env.GITHUB_TOKEN) {
-    init = {
-      headers: {
-        // Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      },
-    };
+    // init = {
+    //   headers: {
+    //     Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    //   },
+    // };
   }
   const resp = await globalThis.fetch(url, init);
   if (!resp.ok) {
@@ -48,11 +48,11 @@ export async function getReleases(
   const url = `https://api.github.com/repos/${repo}/releases`;
   let init: RequestInit | undefined = undefined;
   if (process.env.GITHUB_TOKEN) {
-    init = {
-      headers: {
-        // Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      },
-    };
+    // init = {
+    //   headers: {
+    //     Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    //   },
+    // };
   }
   const resp = await globalThis.fetch(url, init);
   if (!resp.ok) {
