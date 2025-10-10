@@ -44,39 +44,40 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # test-linux:
-  #   runs-on: 'ubuntu-latest'
-  #   needs: [deploy]
-  #   steps:
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/go.sh" | sh)
-  #       - run: which go
-  #       - run: go version
+  test-linux:
+    runs-on: 'ubuntu-latest'
+    needs: [deploy]
+    steps:
+        - run: eval $(curl -sSf "sh.davidalsh.com/go.sh" | sh)
+        - run: which go
+        - run: go version
 
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/just.sh" | sh)
-  #       - run: which just
-  #       - run: just --version
+        - run: eval $(curl -sSf "sh.davidalsh.com/just.sh" | sh)
+        - run: which just
+        - run: just --version
 
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/nodejs.sh" | sh)
-  #       - run: which node
-  #       - run: node --version 
+        - run: eval $(curl -sSf "sh.davidalsh.com/nodejs.sh" | sh)
+        - run: which node
+        - run: node --version 
         
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/procmon.sh" | sh)
-  #       - run: which procmon
-  #       - run: procmon --help
+        - run: eval $(curl -sSf "sh.davidalsh.com/procmon.sh" | sh)
+        - run: which procmon
+        - run: procmon --help
 
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/rrm.sh" | sh)
-  #       - run: which rrm
-  #       - run: rrm --help
+        - run: eval $(curl -sSf "sh.davidalsh.com/rrm.sh" | sh)
+        - run: which rrm
+        - run: rrm --help
 
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/rust.sh" | sh)
-  #       - run: which cargo
-  #       - run: cargo --version
+        - run: eval $(curl -sSf "sh.davidalsh.com/rust.sh" | sh)
+        - run: which cargo
+        - run: cargo --version
 
-  #       - run: eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
-  #       - run: echo $OS_ARCH
+        - run: eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh)
+        - run: echo $OS_ARCH
 
-  #       - run: export PYTHON_VERSION=3.12 eval $(curl -sSf "sh.davidalsh.com/python.sh" | sh)
-  #       - run: echo $OS_ARCH
+        - run: eval $(curl -sSf "sh.davidalsh.com/which-platform.sh" | sh -s - --version 3.12)
+        - run: which python
+        - run: python --version
 
   # test-windows:
   #   runs-on: 'windows-latest'
