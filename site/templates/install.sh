@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 PACKAGE_NAME="<%- ctx.packageName %>"
 VERSION="latest"
 if ! [ "$<%- ctx.PACKAGE_NAME %>_VERSION" = "" ]; then
@@ -114,8 +116,9 @@ fi
 >&2 echo COMPRESSION_FORMAT: $COMPRESSION_FORMAT
 
 FETCH_URL="https://sh.davidalsh.com/packages/${PACKAGE_NAME}/${VERSION}_${OS}_${ARCH}_tar_${COMPRESSION_FORMAT}.txt"
-URL=$(curl -sSL "$FETCH_URL")
+>&2 echo VERSION_URL: $FETCH_URL
 
+URL=$(curl -sSL "$FETCH_URL")
 >&2 echo URL: $URL
 
 if [ -d $OUT_DIR ]; then

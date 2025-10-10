@@ -86,7 +86,7 @@ export async function main() {
         inputFile: path.join(dirname, "templates", "install.sh"),
         outputFile: path.join(root, "dist", `${packageName}.sh`),
         packageName,
-        PACKAGE_NAME: packageName.toUpperCase(),
+        PACKAGE_NAME: packageName.toUpperCase().replaceAll('-', '_'),
         package_name: packageName.replaceAll('-', '_'),
       });
     }
