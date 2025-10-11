@@ -50,9 +50,10 @@ type DownloadManifestEntry = {
 type DownloadManifest = Record<string, Array<DownloadManifestEntry>>;
 
 export async function main() {
-  if (!fs.existsSync(tmpDownloads)) {
-    fs.mkdirSync(tmpDownloads, { recursive: true });
+  if (fs.existsSync(tmpRoot)) {
+    await fs.promises.rm(tmpRoot, { recursive: true, force: true });
   }
+  await fs.promises.mkdir(tmpRoot, { recursive: true });
 
   const downloadManifest: DownloadManifest = {};
 
@@ -71,15 +72,23 @@ export async function main() {
     // flatDir(downloadManifest),
   ]);
 
-  console.log(downloadManifest)
   const downloadManifestEntries = Object.entries(downloadManifest);
   downloadManifestEntries.sort((a, b) => sortEntries(a[0], b[0]));
 
   const doneShellScripts = new Set<string>();
 
   for (const [releaseName, downloads] of downloadManifestEntries) {
-    const packageName = downloads[0].project;
-    const packageVersion = downloads[0].version;
+    await fs.promises.rm(tmpRoot, { recursive: true, force: true });
+    await fs.promises.mkdir(tmpRoot, { recursive: true });
+
+    if (!downloads.length) {
+      console.log(`[${releaseName}] SKIP: No downloads`);
+      continue
+    }
+
+    const packageName = downloads[0]?.project;
+    const packageVersion = downloads[0]?.version;
+
 
     if (!doneShellScripts.has(packageName)) {
       doneShellScripts.add(packageName);
@@ -93,13 +102,65 @@ export async function main() {
     }
 
     if (await releaseExists(REPO, releaseName)) {
-      console.log(`[${releaseName}] Release Exists Skipping`);
+      console.log(`[${releaseName}] SKIP: Release Exists`);
       continue;
     }
 
-    console.log(`[${releaseName}] Download`);
+    console.log(`\n[${releaseName}] START`);
+
+
+    const files: Array<{
+      project: string
+      version: string
+      os: string
+      arch: string
+      tar_gz: string
+      tar_xz: string
+      zip: string
+    }> = []
+
+    for (const {
+      project,
+      version,
+      os,
+      arch,
+      format,
+      url,
+      stripComponents,
+    } of downloads) {
+      const success = await recompress(
+        tmpRoot,
+        tmpDownloads,
+        url,
+        format || inferArchiveFormat(url),
+        project,
+        `${os}-${arch}`,
+        version,
+        stripComponents,
+      );
+      if (!success) {
+        console.log(`[${releaseName}] SKIP_DOWNLOAD: ${url}`);
+        continue;
+      }
+
+      files.push({
+        project,
+        version,
+        os,
+        arch,
+        tar_gz: path.join(tmpRoot, `${project}-${version}-${os}-${arch}.tar.gz`),
+        tar_xz: path.join(tmpRoot, `${project}-${version}-${os}-${arch}.tar.xz`),
+        zip: path.join(tmpRoot, `${project}-${version}-${os}-${arch}.zip`),
+      })
+    }
+
+    if (!files.length) {
+      console.log(`[${releaseName}] SKIP_RELEASE: No files`)
+      continue
+    }
 
     try {
+      console.log(`[${releaseName}] CREATE_RELEASE`);
       await githubReleaseCreate({
         repo: REPO,
         title: releaseName,
@@ -116,73 +177,53 @@ export async function main() {
         version,
         os,
         arch,
-        format,
-        url,
-        stripComponents,
-      } of downloads) {
-        const success = await recompress(
-          tmpRoot,
-          tmpDownloads,
-          url,
-          format || inferArchiveFormat(url),
-          project,
-          `${os}-${arch}`,
-          version,
-          stripComponents,
-        );
-        if (!success) {
-          console.log(`Skipping download for: ${url}`);
-          continue;
-        }
-
+        tar_gz,
+        tar_xz,
+        zip,
+      } of files) {
         console.log(
-          `[${releaseName}] Upload ${project}-${version}-${os}-${arch}.tar.gz`,
+          `[${releaseName}] UPLOAD_RELEASE: ${project}-${version}-${os}-${arch}.tar.gz`,
         );
         await githubReleaseUpload({
           repo: REPO,
           tag: releaseName,
-          file: path.join(
-            tmpRoot,
-            `${project}-${version}-${os}-${arch}.tar.gz`,
-          ),
+          file: tar_gz
         });
 
         console.log(
-          `[${releaseName}] Upload ${project}-${version}-${os}-${arch}.tar.xz`,
+          `[${releaseName}] UPLOAD_RELEASE: ${project}-${version}-${os}-${arch}.tar.xz`,
         );
         await githubReleaseUpload({
           repo: REPO,
           tag: releaseName,
-          file: path.join(
-            tmpRoot,
-            `${project}-${version}-${os}-${arch}.tar.xz`,
-          ),
+          file: tar_xz
         });
 
         console.log(
-          `[${releaseName}] Upload ${project}-${version}-${os}-${arch}.zip`,
+          `[${releaseName}] UPLOAD_RELEASE: ${project}-${version}-${os}-${arch}.zip`,
         );
         await githubReleaseUpload({
           repo: REPO,
           tag: releaseName,
-          file: path.join(tmpRoot, `${project}-${version}-${os}-${arch}.zip`),
+          file: zip
         });
       }
 
+      console.log(`[${releaseName}] PUBLISH_RELEASE`);
       await githubReleaseEdit({
         repo: REPO,
         tag: releaseName,
         draft: false,
       });
-      console.log(`[${releaseName}] Done`);
+      console.log(`[${releaseName}] DONE`);
     } catch (error) {
-      console.log(`[${releaseName}] Failed`);
+      console.log(`[${releaseName}] ===== FAILED =====`);
       console.log({ error });
-
       await githubReleaseDelete({
         repo: REPO,
         tag: releaseName,
       });
+      process.exit(1)
     }
   }
 }
@@ -264,7 +305,6 @@ async function nodejs(manifest: DownloadManifest): Promise<void> {
     if (majorInt < 18) continue
     
     // prettier-ignore
-    console.log(version)
     manifest[`${project}-${version}`] = [
       { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
       { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
