@@ -53,23 +53,23 @@ export async function main() {
   if (fs.existsSync(tmpRoot)) {
     await fs.promises.rm(tmpRoot, { recursive: true, force: true });
   }
-  await fs.promises.mkdir(tmpRoot, { recursive: true });
+  await fs.promises.mkdir(tmpDownloads, { recursive: true });
 
   const downloadManifest: DownloadManifest = {};
 
   await Promise.all([
-    // deno(downloadManifest),
-    // just(downloadManifest),
-    // terraform(downloadManifest),
-    // go(downloadManifest),
+    deno(downloadManifest),
+    just(downloadManifest),
+    terraform(downloadManifest),
+    go(downloadManifest),
     nodejs(downloadManifest),
-    // python(downloadManifest),
-    // vultrCli(downloadManifest),
+    python(downloadManifest),
+    vultrCli(downloadManifest),
 
     // alshdavid projects
-    // http_server_rs(downloadManifest),
-    // rrm(downloadManifest),
-    // flatDir(downloadManifest),
+    http_server_rs(downloadManifest),
+    rrm(downloadManifest),
+    flatDir(downloadManifest),
   ]);
 
   const downloadManifestEntries = Object.entries(downloadManifest);
@@ -79,7 +79,7 @@ export async function main() {
 
   for (const [releaseName, downloads] of downloadManifestEntries) {
     await fs.promises.rm(tmpRoot, { recursive: true, force: true });
-    await fs.promises.mkdir(tmpRoot, { recursive: true });
+    await fs.promises.mkdir(tmpDownloads, { recursive: true });
 
     if (!downloads.length) {
       console.log(`[${releaseName}] SKIP: No downloads`);
@@ -297,61 +297,61 @@ async function nodejs(manifest: DownloadManifest): Promise<void> {
 
   const allVersions: Record<string, Array<string>> = {};
 
-  // Get all versions of Nodejs
-  for (const release of resp) {
-    const version = release.version.replace("v", "");
-    const [major, minor, patch] = version.split('.')
-    const majorInt = parseInt(major, 10)
-    if (majorInt < 18) continue
-    
-    // prettier-ignore
-    manifest[`${project}-${version}`] = [
-      { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
-      { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
-      { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
-      { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
-      { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
-      { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
-    ]
-  }
-
-  // // Get the latest release of the last 7 major releases
+  // // Get all versions of Nodejs
   // for (const release of resp) {
   //   const version = release.version.replace("v", "");
-  //   const [major, minor] = version.split(".");
-  //   const key = `${major}`;
-  //   allVersions[key] = allVersions[key] || [];
-  //   if (allVersions[key].length >= 1) {
-  //     continue;
-  //   }
-  //   allVersions[key].push(version);
+  //   const [major, minor, patch] = version.split('.')
+  //   const majorInt = parseInt(major, 10)
+  //   if (majorInt < 18) continue
+    
+  //   // prettier-ignore
+  //   manifest[`${project}-${version}`] = [
+  //     { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
+  //     { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
+  //     { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
+  //     { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
+  //     { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
+  //     { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
+  //   ]
   // }
 
-  // const allVersionsEntries = Object.entries(allVersions);
-  // allVersionsEntries.sort((a, b) => sortEntries(`${a[0]}.0.0`, `${b[0]}.0.0`));
-  // const versions = [
-  //   allVersionsEntries.pop(),
-  //   allVersionsEntries.pop(),
-  //   allVersionsEntries.pop(),
-  //   allVersionsEntries.pop(),
-  //   allVersionsEntries.pop(),
-  //   allVersionsEntries.pop(),
-  //   allVersionsEntries.pop(),
-  // ];
+  // Get the latest release of the last 7 major releases
+  for (const release of resp) {
+    const version = release.version.replace("v", "");
+    const [major, minor] = version.split(".");
+    const key = `${major}`;
+    allVersions[key] = allVersions[key] || [];
+    if (allVersions[key].length >= 1) {
+      continue;
+    }
+    allVersions[key].push(version);
+  }
 
-  // for (const [_, minorVersions] of versions) {
-  //   for (const version of minorVersions) {
-  //     // prettier-ignore
-  //     manifest[`${project}-${version}`] = [
-  //       { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
-  //       { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
-  //       { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
-  //       { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
-  //       { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
-  //       { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
-  //     ]
-  //   }
-  // }
+  const allVersionsEntries = Object.entries(allVersions);
+  allVersionsEntries.sort((a, b) => sortEntries(`${a[0]}.0.0`, `${b[0]}.0.0`));
+  const versions = [
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+    allVersionsEntries.pop(),
+  ];
+
+  for (const [_, minorVersions] of versions) {
+    for (const version of minorVersions) {
+      // prettier-ignore
+      manifest[`${project}-${version}`] = [
+        { project, version, os: 'linux',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-x64.tar.gz`,     stripComponents: 1 },
+        { project, version, os: 'linux',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-linux-arm64.tar.gz`,   stripComponents: 1 },
+        { project, version, os: 'macos',    arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-x64.tar.gz`,    stripComponents: 1 },
+        { project, version, os: 'macos',    arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-darwin-arm64.tar.gz`,  stripComponents: 1 },
+        { project, version, os: 'windows',  arch:  'amd64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-x64.zip`,          stripComponents: 1 },
+        { project, version, os: 'windows',  arch:  'arm64', url: `https://nodejs.org/download/release/v${version}/node-v${version}-win-arm64.zip`,        stripComponents: 1 },
+      ]
+    }
+  }
 }
 
 async function http_server_rs(manifest: DownloadManifest): Promise<void> {
