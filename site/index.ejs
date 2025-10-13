@@ -38,7 +38,7 @@ article {
   <article>
   <h3><%= file %></h3>
   <code>
-  eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | sh -s -- --version latest --out-dir ./)
+  eval $(curl -sSf "sh.davidalsh.com/<%= file %>" | sh -s -- --version=latest --out-dir=./)
   </code>
   </article>
 <% } else if (file.endsWith('.bash')) { %>
